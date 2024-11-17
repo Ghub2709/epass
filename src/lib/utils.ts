@@ -1,5 +1,9 @@
 export function getAssetPath(path: string): string {
-  // Remove leading slash if present
-  const cleanPath = path.startsWith('/') ? path.slice(1) : path;
-  return `${process.env.NEXT_PUBLIC_BASE_PATH || ''}/` + cleanPath;
+  // Check if we're in development
+  if (process.env.NODE_ENV === 'development') {
+    return `/${path}`
+  }
+  
+  // In production, prepend the basePath
+  return `/epass/${path}`
 } 
