@@ -7,6 +7,13 @@ export default function Hero() {
   const [isMuted, setIsMuted] = useState(true)
   const videoRef = useRef<HTMLVideoElement>(null)
 
+  useEffect(() => {
+    // Force video reload after mount
+    if (videoRef.current) {
+      videoRef.current.load()
+    }
+  }, [])
+
   const toggleMute = () => {
     if (videoRef.current) {
       videoRef.current.muted = !videoRef.current.muted
@@ -72,7 +79,7 @@ export default function Hero() {
                     className="w-full h-full object-cover cursor-pointer"
                   >
                     <source 
-                      src={`/epass/videos/stephangrosser.mp4`} 
+                      src={`${process.env.NEXT_PUBLIC_BASE_PATH}/videos/stephangrosser.mp4`}
                       type="video/mp4" 
                     />
                     Your browser does not support the video tag.
