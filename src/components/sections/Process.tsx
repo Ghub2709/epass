@@ -91,7 +91,7 @@ export default function Process() {
               playsInline
               className="w-full h-full object-cover"
             >
-              <source src="/videos/LisaMeyerdierks.mp4" type="video/mp4" />
+              <source src={`${process.env.NEXT_PUBLIC_BASE_PATH || ''}/videos/LisaMeyerdierks.mp4`} type="video/mp4" />
             </video>
 
             {/* Video Controls */}
