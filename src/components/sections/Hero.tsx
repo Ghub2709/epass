@@ -1,6 +1,6 @@
 'use client'
 import Image from 'next/image'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { getAssetPath } from '@/lib/utils'
 
 export default function Hero() {
