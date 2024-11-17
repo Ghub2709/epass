@@ -79,7 +79,7 @@ export default function Hero() {
                     className="w-full h-full object-cover cursor-pointer"
                   >
                     <source 
-                      src={`${process.env.NEXT_PUBLIC_BASE_PATH}/videos/stephangrosser.mp4`}
+                      src={getAssetPath('videos/stephangrosser.mp4')}
                       type="video/mp4" 
                     />
                     Your browser does not support the video tag.
