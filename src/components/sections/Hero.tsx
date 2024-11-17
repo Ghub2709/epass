@@ -18,7 +18,7 @@ export default function Hero() {
   return (
     <section className="relative h-screen">
       {/* Video Background with proper overlay */}
-      <div className="absolute inset-0">
+      <div className="absolute inset-0 overflow-hidden">
         <video
           ref={videoRef}
           autoPlay
@@ -27,7 +27,7 @@ export default function Hero() {
           loop
           className="w-full h-full object-cover"
         >
-          <source src={videoUrl} type="video/mp4" />
+          <source src="/videos/StephanGrosser.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
         {/* Improved overlay with better gradient */}
