@@ -3,6 +3,7 @@ import path from 'path'
 import matter from 'gray-matter'
 import { remark } from 'remark'
 import html from 'remark-html'
+import { getAssetPath } from '@/lib/utils'
 
 const blogsDirectory = path.join(process.cwd(), 'public/blogs')
 
@@ -29,7 +30,7 @@ export async function getAllBlogPosts(): Promise<BlogPost[]> {
         slug,
         title: data.title || "Die häufigsten Fehler bei der Online-Erstellung eines Energieausweises",
         description: data.description || "Erfahren Sie, welche Fehler Sie bei der Erstellung Ihres Energieausweises vermeiden sollten.",
-        thumbnail: `/images/${slug}.jpeg`,
+        thumbnail: getAssetPath(`images/${slug}.jpeg`),
         content
       }
     })
@@ -54,7 +55,7 @@ export async function getBlogPost(slug: string): Promise<BlogPost | null> {
       slug,
       title: data.title || "Die häufigsten Fehler bei der Online-Erstellung eines Energieausweises",
       description: data.description || "Erfahren Sie, welche Fehler Sie bei der Erstellung Ihres Energieausweises vermeiden sollten.",
-      thumbnail: `/images/${slug}.jpeg`,
+      thumbnail: getAssetPath(`images/${slug}.jpeg`),
       content: contentHtml,
     }
   } catch (error) {

@@ -1,6 +1,7 @@
 'use client'
 import Image from 'next/image'
 import { useState, useRef } from 'react'
+import { getAssetPath } from '@/lib/utils'
 
 export default function Hero() {
   const [isMuted, setIsMuted] = useState(true)
@@ -71,7 +72,7 @@ export default function Hero() {
                     className="w-full h-full object-cover cursor-pointer"
                   >
                     <source 
-                      src={`${process.env.NEXT_PUBLIC_BASE_PATH || ''}/videos/stephangrosser.mp4`} 
+                      src={getAssetPath('videos/stephangrosser.mp4')} 
                       type="video/mp4" 
                     />
                   </video>

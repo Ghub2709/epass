@@ -1,22 +1,23 @@
 'use client'
 import Image from 'next/image'
+import { getAssetPath } from '@/lib/utils'
 
 export default function Trust() {
   const certifications = [
     {
       title: "DIBt Registriert",
       description: "Offiziell beim Deutschen Institut für Bautechnik registriert",
-      icon: "/images/dibt-logo.png"
+      icon: getAssetPath('images/dibt-logo.png')
     },
     {
       title: "TÜV Geprüft",
       description: "Qualitätsmanagement nach ISO 9001 zertifiziert",
-      icon: "/images/tuv-logo.png"
+      icon: getAssetPath('images/tuv-logo.png')
     },
     {
       title: "DSGVO Konform",
       description: "Höchste Standards beim Datenschutz",
-      icon: "/images/dsgvo-logo.png"
+      icon: getAssetPath('images/dsgvo-logo.png')
     }
   ]
 

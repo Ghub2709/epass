@@ -1,5 +1,6 @@
 'use client'
 import { useState, useRef } from 'react'
+import { getAssetPath } from '@/lib/utils'
 
 export default function Process() {
   const [isMuted, setIsMuted] = useState(true)
@@ -91,7 +92,7 @@ export default function Process() {
               playsInline
               className="w-full h-full object-cover"
             >
-              <source src={`${process.env.NEXT_PUBLIC_BASE_PATH || ''}/videos/LisaMeyerdierks.mp4`} type="video/mp4" />
+              <source src={getAssetPath('videos/LisaMeyerdierks.mp4')} type="video/mp4" />
             </video>
 
             {/* Video Controls */}
