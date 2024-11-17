@@ -2,11 +2,25 @@
 
 import Link from 'next/link'
 
+// Add type declaration for window.openChat
+declare global {
+  interface Window {
+    openChat?: () => void;
+  }
+}
+
 interface BlogCTAProps {
   type: 'primary' | 'secondary' | 'chat'
 }
 
 export default function BlogCTA({ type }: BlogCTAProps) {
+  // Add handleChat function
+  const handleChat = () => {
+    if (typeof window !== 'undefined' && typeof window.openChat === 'function') {
+      window.openChat();
+    }
+  };
+
   if (type === 'primary') {
     return (
       <div className="my-12 bg-primary-50 p-8 rounded-lg border border-primary-100 not-prose">
@@ -55,7 +69,7 @@ export default function BlogCTA({ type }: BlogCTAProps) {
       </p>
       <div className="flex gap-4 flex-wrap">
         <button 
-          onClick={() => window.openChat?.()}
+          onClick={handleChat}
           className="inline-block bg-primary-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-700 transition-colors"
         >
           Chat öffnen →

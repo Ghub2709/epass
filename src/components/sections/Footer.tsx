@@ -2,10 +2,25 @@
 import Image from 'next/image'
 import Link from 'next/link'
 
+// Add interface for link structure
+interface FooterLink {
+  label: string;
+  href: string;
+}
+
+interface FooterSection {
+  title: string;
+  links: FooterLink[];
+}
+
+interface FooterSections {
+  [key: string]: FooterSection;
+}
+
 export default function Footer() {
   const currentYear = new Date().getFullYear()
 
-  const footerSections = {
+  const footerSections: FooterSections = {
     company: {
       title: "Unternehmen",
       links: [
@@ -104,7 +119,6 @@ export default function Footer() {
                     <li key={index}>
                       <Link
                         href={link.href}
-                        onClick={link.onClick}
                         className="text-sm hover:text-white transition-colors"
                       >
                         {link.label}

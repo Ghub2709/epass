@@ -3,6 +3,15 @@ import { notFound } from 'next/navigation'
 import { getBlogPost } from '@/lib/blog'
 import HeygenAvatar from '@/components/HeygenAvatar'
 import BlogCTA from '@/components/blog/BlogCTA'
+import { getAllBlogPosts } from '@/lib/blog'
+
+// Add this function to generate all possible blog paths
+export async function generateStaticParams() {
+  const posts = await getAllBlogPosts()
+  return posts.map((post) => ({
+    slug: post.slug,
+  }))
+}
 
 export default async function BlogPost({ params }: { params: { slug: string } }) {
   const post = await getBlogPost(params.slug)
