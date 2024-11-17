@@ -72,9 +72,10 @@ export default function Hero() {
                     className="w-full h-full object-cover cursor-pointer"
                   >
                     <source 
-                      src={getAssetPath('videos/stephangrosser.mp4')} 
+                      src={`/epass/videos/stephangrosser.mp4`} 
                       type="video/mp4" 
                     />
+                    Your browser does not support the video tag.
                   </video>
                   
                   {/* Video Controls */}
