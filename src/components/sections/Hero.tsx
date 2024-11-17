@@ -78,7 +78,7 @@ export default function Hero() {
                     loop
                     className="w-full h-full object-cover cursor-pointer"
                   >
-                    <source src="/videos/stephangrosser.mp4" type="video/mp4" />
+                    <source src="/epass/videos/StephanGrosser.mp4" type="video/mp4" />
                     Your browser does not support the video tag.
                   </video>
                   
