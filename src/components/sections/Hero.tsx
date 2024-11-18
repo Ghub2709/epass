@@ -79,8 +79,7 @@ export default function Hero() {
                     className="w-full h-full object-cover cursor-pointer"
                     preload="auto"
                   >
-                    <source src="/videos/stephangrosser.mp4" type="video/mp4" />
-                    <source src="/videos/stephangrosser.webm" type="video/webm" />
+                    <source src={getAssetPath('videos/StephanGrosser.mp4')} type="video/mp4" />
                     Your browser does not support the video tag.
                   </video>
                   
