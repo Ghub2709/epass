@@ -37,6 +37,13 @@ export default function FAQ() {
     }
   ]
 
+  const scrollToForm = () => {
+    const formElement = document.getElementById('contact-form');
+    if (formElement) {
+      formElement.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <section className="py-20 bg-gray-50 relative">
       <div className="container mx-auto px-4 max-w-4xl">
@@ -100,9 +107,12 @@ export default function FAQ() {
         </div>
 
         <div className="text-center mt-12">
-          <p className="text-gray-600">
-            Haben Sie weitere Fragen? Dann sprechen Sie uns einfach direkt an!
-          </p>
+          <button
+            onClick={scrollToForm}
+            className="bg-green-600 text-white px-8 py-4 rounded-lg"
+          >
+            Zum Kontaktformular
+          </button>
         </div>
       </div>
       <HeygenAvatar />

@@ -36,6 +36,13 @@ export default function Trust() {
     }
   ]
 
+  const scrollToForm = () => {
+    const formElement = document.getElementById('contact-form');
+    if (formElement) {
+      formElement.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <section className="py-20 bg-white">
       <div className="container mx-auto px-4">
@@ -80,6 +87,15 @@ export default function Trust() {
               </p>
             </div>
           ))}
+        </div>
+
+        <div className="text-center mt-12">
+          <button
+            onClick={scrollToForm}
+            className="bg-green-600 text-white px-8 py-4 rounded-lg"
+          >
+            Jetzt starten
+          </button>
         </div>
       </div>
     </section>

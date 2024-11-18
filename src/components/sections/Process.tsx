@@ -13,6 +13,13 @@ export default function Process() {
     }
   }
 
+  const scrollToForm = () => {
+    const formElement = document.getElementById('contact-form');
+    if (formElement) {
+      formElement.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   const steps = [
     {
       number: "1",
@@ -75,8 +82,11 @@ export default function Process() {
               ))}
             </div>
 
-            <div className="mt-12 text-center">
-              <button className="bg-green-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-green-700 transition-colors">
+            <div className="text-center mt-12">
+              <button
+                onClick={scrollToForm}
+                className="bg-green-600 text-white px-8 py-4 rounded-lg"
+              >
                 Jetzt Energieausweis erstellen
               </button>
             </div>

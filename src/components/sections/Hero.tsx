@@ -21,6 +21,13 @@ export default function Hero() {
     }
   }
 
+  const scrollToForm = () => {
+    const formElement = document.getElementById('contact-form');
+    if (formElement) {
+      formElement.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <section className="relative bg-gradient-to-b from-green-50 to-white py-32">
       <div className="container mx-auto px-4 max-w-6xl">
@@ -119,7 +126,10 @@ export default function Hero() {
               </div>
 
               <div className="mt-8">
-                <button className="w-full bg-green-600 text-white px-6 py-4 rounded-lg text-lg font-semibold hover:bg-green-700 transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all">
+                <button
+                  onClick={scrollToForm}
+                  className="w-full bg-green-600 text-white px-6 py-4 rounded-lg text-lg font-semibold hover:bg-green-700 transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all"
+                >
                   Proberechnung Anfordern
                 </button>
               </div>
