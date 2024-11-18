@@ -134,34 +134,52 @@ export default function HeroInput() {
       <div>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
-            <div className="relative">
+            <div className="relative group z-10">
               <input
                 type="text"
                 required
-                className="block w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="block w-full px-4 py-3 rounded-xl border-2 border-gray-200 
+                  focus:ring-2 focus:ring-green-500 focus:border-transparent
+                  transition-all duration-300 
+                  hover:border-green-300 hover:shadow-lg
+                  group-hover:translate-y-[-2px]
+                  relative z-20"
                 placeholder="Straße, Hausnummer, PLZ, Ort"
                 value={formData.address}
                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
               />
+              <div className="absolute inset-0 bg-green-50 opacity-0 group-hover:opacity-10 rounded-xl transition-opacity duration-300 z-10" />
             </div>
 
-            <div className="relative">
+            <div className="relative group z-10">
               <input
                 type="number"
                 required
                 min="1900"
                 max={new Date().getFullYear()}
-                className="block w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="block w-full px-4 py-3 rounded-xl border-2 border-gray-200 
+                  focus:ring-2 focus:ring-green-500 focus:border-transparent
+                  transition-all duration-300 
+                  hover:border-green-300 hover:shadow-lg
+                  group-hover:translate-y-[-2px]
+                  relative z-20"
                 placeholder="Baujahr, z.B. 1985"
                 value={formData.buildingYear}
                 onChange={(e) => setFormData({ ...formData, buildingYear: e.target.value })}
               />
+              <div className="absolute inset-0 bg-green-50 opacity-0 group-hover:opacity-10 rounded-xl transition-opacity duration-300 z-10" />
             </div>
 
-            <div className="relative">
+            <div className="relative group z-10">
               <select
                 required
-                className="block w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="block w-full px-4 py-3 rounded-xl border-2 border-gray-200 
+                  focus:ring-2 focus:ring-green-500 focus:border-transparent
+                  transition-all duration-300 
+                  hover:border-green-300 hover:shadow-lg
+                  group-hover:translate-y-[-2px]
+                  appearance-none cursor-pointer
+                  relative z-20"
                 value={formData.buildingType}
                 onChange={(e) => setFormData({ ...formData, buildingType: e.target.value })}
               >
@@ -169,22 +187,40 @@ export default function HeroInput() {
                 <option value="apartment">Mehrfamilienhaus</option>
                 <option value="commercial">Gewerbeimmobilie</option>
               </select>
+              <div className="absolute inset-0 bg-green-50 opacity-0 group-hover:opacity-10 rounded-xl transition-opacity duration-300 z-10" />
+              <div className="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none
+                transition-transform duration-300 group-hover:translate-x-1 z-20">
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
             </div>
           </div>
 
           <button
             type="submit"
-            className="w-full flex items-center justify-center px-8 py-4 border border-transparent text-base font-medium rounded-xl text-white bg-green-600 hover:bg-green-700 transition-colors"
+            className="w-full flex items-center justify-center px-8 py-4 
+              border border-transparent text-base font-medium rounded-xl 
+              text-white bg-green-600 relative overflow-hidden
+              transition-all duration-300 
+              hover:bg-green-700 hover:shadow-xl hover:scale-[1.02]
+              group"
           >
-            <span>Jetzt Proberechnung erstellen</span>
-            <svg 
-              className="w-5 h-5 ml-2" 
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-            </svg>
+            <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-green-600 
+              opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="relative flex items-center gap-2">
+              <span className="transition-transform duration-300 group-hover:translate-x-[-4px]">
+                Jetzt Gratis Proberechnung erstellen
+              </span>
+              <svg 
+                className="w-5 h-5 transform transition-all duration-300 group-hover:translate-x-2" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </div>
           </button>
         </form>
       </div>
@@ -216,8 +252,8 @@ export default function HeroInput() {
               <div className="space-y-8">
                 <h1 className="text-4xl lg:text-5xl font-bold leading-tight">
                   <span className="text-green-600">In 24 Stunden</span> zu
-                  <span className="block mt-6">Ihrem</span>
-                  <span className="block mt-6">Energieausweis</span>
+                  <span className="block mt-2">Ihrem</span>
+                  <span className="block mt-2">Energieausweis</span>
                 </h1>
                 
                 <h2 className="text-2xl text-gray-600 mt-8">
@@ -247,49 +283,62 @@ export default function HeroInput() {
             </motion.div>
 
             {/* Right Column - Form */}
-            <div className="mx-[10%]">
+            <div className="mx-[10%] relative z-10">
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="bg-white rounded-3xl shadow-2xl overflow-hidden"
+                className="bg-white rounded-3xl shadow-2xl overflow-hidden
+                  transform transition-all duration-300 
+                  hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)]
+                  group relative"
               >
-                {/* Progress Bar - Modified to cap at 96% for email step */}
-                <div className="bg-green-50 px-6 py-3">
-                  <div className="flex justify-between text-sm text-green-800 mb-2">
-                    <span>Fortschritt</span>
-                    <span>
-                      {formStep === 'initial' ? '0%' : 
-                       formStep === 'loading' ? `${Math.round(progress)}%` : 
-                       '96%'}
-                    </span>
-                  </div>
-                  <div className="h-2 bg-green-100 rounded-full">
-                    <div 
-                      className="h-2 bg-green-600 rounded-full transition-all duration-300"
-                      style={{ 
-                        width: formStep === 'initial' ? '0%' : 
-                               formStep === 'loading' ? `${progress}%` : 
-                               '96%' 
-                      }}
-                    />
-                  </div>
-                </div>
+                {/* Move background elements behind the content */}
+                <div className="absolute -top-4 -right-4 w-20 h-20 bg-green-50 rounded-full 
+                  opacity-50 blur-xl transition-all duration-300 
+                  group-hover:scale-150 -z-10" />
+                <div className="absolute -bottom-4 -left-4 w-24 h-24 bg-blue-50 rounded-full 
+                  opacity-50 blur-xl transition-all duration-300 
+                  group-hover:scale-150 -z-10" />
 
-                <div className="p-8">
-                  {renderFormContent()}
-                </div>
-
-                {/* Social Proof */}
-                <div className="px-8 py-4 bg-gray-50 border-t border-gray-100">
-                  <div className="flex items-center justify-between">
-                    <div className="flex -space-x-2">
-                      {[1,2,3,4].map((i) => (
-                        <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-gray-200" />
-                      ))}
+                <div className="relative z-20">
+                  {/* Progress Bar - Modified to cap at 96% for email step */}
+                  <div className="bg-green-50 px-6 py-3">
+                    <div className="flex justify-between text-sm text-green-800 mb-2">
+                      <span>Fortschritt</span>
+                      <span>
+                        {formStep === 'initial' ? '0%' : 
+                         formStep === 'loading' ? `${Math.round(progress)}%` : 
+                         '96%'}
+                      </span>
                     </div>
-                    <p className="text-sm text-gray-600">
-                      <span className="font-semibold">127 Personen</span> haben heute bereits bestellt
-                    </p>
+                    <div className="h-2 bg-green-100 rounded-full">
+                      <div 
+                        className="h-2 bg-green-600 rounded-full transition-all duration-300"
+                        style={{ 
+                          width: formStep === 'initial' ? '0%' : 
+                                 formStep === 'loading' ? `${progress}%` : 
+                                 '96%' 
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="p-8">
+                    {renderFormContent()}
+                  </div>
+
+                  {/* Social Proof */}
+                  <div className="px-8 py-4 bg-gray-50 border-t border-gray-100">
+                    <div className="flex items-center justify-between">
+                      <div className="flex -space-x-2">
+                        {[1,2,3,4].map((i) => (
+                          <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-gray-200" />
+                        ))}
+                      </div>
+                      <p className="text-sm text-gray-600">
+                        <span className="font-semibold">127 Personen</span> haben heute bereits bestellt
+                      </p>
+                    </div>
                   </div>
                 </div>
               </motion.div>
