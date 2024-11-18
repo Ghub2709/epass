@@ -3,7 +3,7 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - main  # Löst bei Push auf main Branch aus
+      - main
 
 jobs:
   build-and-deploy:
@@ -15,7 +15,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'  # oder Ihre bevorzugte Node-Version
+          node-version: '18'
 
       - name: Install Dependencies
         run: npm ci
@@ -23,10 +23,7 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          NEXT_PUBLIC_BASE_PATH: ''  # Falls nötig für Ihre Konfiguration
-
-      - name: Export
-        run: npm run export  # Falls Sie einen separaten Export-Schritt haben
+          NEXT_PUBLIC_BASE_PATH: ''
 
       - name: Add .nojekyll file
         run: touch ./out/.nojekyll
@@ -34,6 +31,6 @@ jobs:
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          branch: gh-pages  # Die Branch für GitHub Pages
-          folder: out      # Der Ordner mit den Build-Dateien
-          clean: true      # Löscht vorherige Dateien 
+          branch: gh-pages
+          folder: out
+          clean: true
