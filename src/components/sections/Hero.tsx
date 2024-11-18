@@ -114,7 +114,7 @@ export default function Hero() {
                   <p className="text-gray-600">Gründer & Geschäftsführer</p>
                   <div className="flex items-center justify-center gap-1 text-green-600 text-sm mt-1">
                     <span>✓</span>
-                    <p>Persönliche Beratungsgarantie</p>
+                    <p>inkl. persönlicher Beratungsgarantie</p>
                   </div>
                 </div>
               </div>
