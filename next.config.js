@@ -3,10 +3,11 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   output: 'export',
-  basePath: '/epass',
+  basePath: process.env.NODE_ENV === 'production' ? '/epass' : '',
   images: {
     unoptimized: true
   },
+  assetPrefix: process.env.NODE_ENV === 'production' ? '/epass' : '',
   webpack: (config) => {
     config.cache = false
     config.module.rules.push({
