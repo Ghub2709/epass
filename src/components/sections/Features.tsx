@@ -50,7 +50,7 @@ export default function Features() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 my-16">
           {features.map((feature, index) => (
             <div
               key={index}
@@ -79,7 +79,7 @@ export default function Features() {
             onClick={scrollToForm}
             className="bg-green-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-green-700 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
           >
-            Kostenlose Proberechnung Starten
+            Kostenlose Proberechnung
           </button>
         </div>
       </div>

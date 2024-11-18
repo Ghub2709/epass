@@ -55,7 +55,7 @@ export default function Trust() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 mb-16">
+        <div className="grid md:grid-cols-3 gap-8 mb-8">
           {stats.map((stat, index) => (
             <div key={index} className="text-center">
               <div className="text-4xl font-bold text-green-600 mb-2">
