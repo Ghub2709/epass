@@ -1,6 +1,7 @@
 'use client'
 import Image from 'next/image'
 import Link from 'next/link'
+import { getAssetPath } from '@/lib/utils'
 
 // Add interface for link structure
 interface FooterLink {
@@ -59,7 +60,7 @@ export default function Footer() {
           <div className="lg:col-span-3">
             <div className="mb-8">
               <Image
-                src="/images/logo-white.svg"
+                src={getAssetPath('images/logo-white.svg')}
                 alt="Premium Energiepass® Online"
                 width={300}
                 height={100}
