@@ -92,9 +92,9 @@ export default function Trust() {
         <div className="text-center mt-12">
           <button
             onClick={scrollToForm}
-            className="bg-green-600 text-white px-8 py-4 rounded-lg"
+            className="bg-green-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-green-700 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
           >
-            Jetzt starten
+            Jetzt Energieausweis erstellen
           </button>
         </div>
       </div>

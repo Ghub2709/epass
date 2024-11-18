@@ -20,7 +20,7 @@ export default function Contact() {
               href="https://wa.me/4915206077767"
               target="_blank"
               rel="noopener noreferrer"
-              className="group bg-gradient-to-b from-green-50 to-white p-6 rounded-2xl border border-green-100 shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 text-center"
+              className="group bg-white p-6 rounded-2xl border border-green-100 shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 text-center"
             >
               <div className="bg-green-500 w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
                 <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -35,7 +35,7 @@ export default function Contact() {
             {/* Email */}
             <a
               href="mailto:info@premium-energiepass.online"
-              className="group bg-gradient-to-b from-green-50 to-white p-6 rounded-2xl border border-green-100 shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 text-center"
+              className="group bg-white p-6 rounded-2xl border border-green-100 shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 text-center"
             >
               <div className="bg-green-500 w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
                 <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -50,7 +50,7 @@ export default function Contact() {
             {/* Phone */}
             <a
               href="tel:+4915206077767"
-              className="group bg-gradient-to-b from-green-50 to-white p-6 rounded-2xl border border-green-100 shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 text-center"
+              className="group bg-white p-6 rounded-2xl border border-green-100 shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 text-center"
             >
               <div className="bg-green-500 w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
                 <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -63,7 +63,7 @@ export default function Contact() {
             </a>
           </div>
 
-          <div className="mt-12 text-center p-8 bg-gradient-to-b from-green-50 to-white rounded-2xl shadow-sm border border-green-100">
+          <div className="mt-12 text-center p-8 bg-white rounded-2xl shadow-sm border border-green-100">
             <div className="inline-flex items-center gap-2 text-gray-700 mb-2">
               <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
