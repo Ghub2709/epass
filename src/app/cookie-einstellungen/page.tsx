@@ -26,7 +26,8 @@ export default function CookieSettingsPage() {
   }
 
   const scrollToForm = () => {
-    router.push('/#contact-form')
+    const basePath = process.env.NODE_ENV === 'production' ? '/epass' : '';
+    window.location.href = `${basePath}/#contact-form`;
   }
 
   return (
