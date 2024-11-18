@@ -8,6 +8,8 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -24,6 +26,9 @@ jobs:
         run: npm run build
         env:
           NEXT_PUBLIC_BASE_PATH: ''
+
+      - name: List output directory
+        run: ls -la out
 
       - name: Add .nojekyll file
         run: touch ./out/.nojekyll
