@@ -1,4 +1,5 @@
 import Hero from '@/components/sections/Hero'
+import HeroInput from '@/components/sections/HeroInput'
 import Features from '@/components/sections/Features'
 import Process from '@/components/sections/Process'
 import Pricing from '@/components/sections/Pricing'
@@ -12,6 +13,7 @@ export default function Home() {
   return (
     <main>
       <Hero />
+      <HeroInput />
       <Features />
       <Process />
       <Pricing />
