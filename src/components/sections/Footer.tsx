@@ -60,7 +60,7 @@ export default function Footer() {
           <div className="lg:col-span-3">
             <div className="mb-8">
               <Image
-                src={getAssetPath('images/logo-white.svg')}
+                src={getAssetPath('images/logo-white.png')}
                 alt="Premium Energiepass® Online"
                 width={300}
                 height={100}
