@@ -16,6 +16,7 @@ export default function HeroInput() {
   const [progress, setProgress] = useState(0)
   const [isMuted, setIsMuted] = useState(true)
   const videoRef = useRef<HTMLVideoElement>(null)
+  const [isFormFocused, setIsFormFocused] = useState(false)
 
   useEffect(() => {
     if (videoRef.current) {
@@ -65,6 +66,10 @@ export default function HeroInput() {
     console.log('Form data:', formData)
   }
 
+  const handleFormFocus = () => {
+    setIsFormFocused(true)
+  }
+
   const renderFormContent = () => {
     if (formStep === 'loading') {
       return (
@@ -104,6 +109,7 @@ export default function HeroInput() {
           {!formData.contactMethod ? (
             <div className="space-y-4">
               <button
+                type="button"
                 onClick={() => setFormData(prev => ({ ...prev, contactMethod: 'email' }))}
                 className="w-full flex items-center justify-between px-6 py-4 bg-white border-2 border-gray-200 rounded-xl hover:border-green-500 hover:shadow-lg transition-all duration-300 group"
               >
@@ -119,6 +125,7 @@ export default function HeroInput() {
               </button>
 
               <button
+                type="button"
                 onClick={() => setFormData(prev => ({ ...prev, contactMethod: 'whatsapp' }))}
                 className="w-full flex items-center justify-between px-6 py-4 bg-white border-2 border-gray-200 rounded-xl hover:border-green-500 hover:shadow-lg transition-all duration-300 group"
               >
@@ -134,7 +141,7 @@ export default function HeroInput() {
               </button>
             </div>
           ) : (
-            <form onSubmit={handleEmailSubmit} className="space-y-6">
+            <div className="space-y-6">
               <div className="relative group">
                 {formData.contactMethod === 'email' ? (
                   <input
@@ -163,12 +170,7 @@ export default function HeroInput() {
                 className="w-full flex items-center justify-center px-8 py-4 border border-transparent text-base font-medium rounded-xl text-white bg-green-600 hover:bg-green-700 transition-colors group"
               >
                 <span>Ja! Unterlagen {formData.contactMethod === 'email' ? 'per E-Mail' : 'per WhatsApp'} zusenden</span>
-                <svg 
-                  className="w-5 h-5 ml-2 transform transition-all duration-300 group-hover:translate-x-1" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
-                >
+                <svg className="w-5 h-5 ml-2 transform transition-all duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
               </button>
@@ -180,105 +182,103 @@ export default function HeroInput() {
               >
                 ← Andere Kontaktmethode wählen
               </button>
-            </form>
+            </div>
           )}
         </div>
       )
     }
 
     return (
-      <div>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-4">
-            <div className="relative group z-10">
-              <input
-                type="text"
-                required
-                className="block w-full px-4 py-3 rounded-xl border-2 border-gray-200 
-                  focus:ring-2 focus:ring-green-500 focus:border-transparent
-                  transition-all duration-300 
-                  hover:border-green-300 hover:shadow-lg
-                  group-hover:translate-y-[-2px]
-                  relative z-20"
-                placeholder="Straße, Hausnummer, PLZ, Ort"
-                value={formData.address}
-                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-              />
-              <div className="absolute inset-0 bg-green-50 opacity-0 group-hover:opacity-10 rounded-xl transition-opacity duration-300 z-10" />
-            </div>
-
-            <div className="relative group z-10">
-              <input
-                type="number"
-                required
-                min="1900"
-                max={new Date().getFullYear()}
-                className="block w-full px-4 py-3 rounded-xl border-2 border-gray-200 
-                  focus:ring-2 focus:ring-green-500 focus:border-transparent
-                  transition-all duration-300 
-                  hover:border-green-300 hover:shadow-lg
-                  group-hover:translate-y-[-2px]
-                  relative z-20"
-                placeholder="Baujahr, z.B. 1985"
-                value={formData.buildingYear}
-                onChange={(e) => setFormData({ ...formData, buildingYear: e.target.value })}
-              />
-              <div className="absolute inset-0 bg-green-50 opacity-0 group-hover:opacity-10 rounded-xl transition-opacity duration-300 z-10" />
-            </div>
-
-            <div className="relative group z-10">
-              <select
-                required
-                className="block w-full px-4 py-3 rounded-xl border-2 border-gray-200 
-                  focus:ring-2 focus:ring-green-500 focus:border-transparent
-                  transition-all duration-300 
-                  hover:border-green-300 hover:shadow-lg
-                  group-hover:translate-y-[-2px]
-                  appearance-none cursor-pointer
-                  relative z-20"
-                value={formData.buildingType}
-                onChange={(e) => setFormData({ ...formData, buildingType: e.target.value })}
-              >
-                <option value="house">Einfamilienhaus</option>
-                <option value="apartment">Mehrfamilienhaus</option>
-                <option value="commercial">Gewerbeimmobilie</option>
-              </select>
-              <div className="absolute inset-0 bg-green-50 opacity-0 group-hover:opacity-10 rounded-xl transition-opacity duration-300 z-10" />
-              <div className="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none
-                transition-transform duration-300 group-hover:translate-x-1 z-20">
-                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
-            </div>
+      <div className="space-y-6">
+        <div className="space-y-4">
+          <div className="relative group z-10">
+            <input
+              type="text"
+              required
+              className="block w-full px-4 py-3 rounded-xl border-2 border-gray-200 
+                focus:ring-2 focus:ring-green-500 focus:border-transparent
+                transition-all duration-300 
+                hover:border-green-300 hover:shadow-lg
+                group-hover:translate-y-[-2px]
+                relative z-20"
+              placeholder="Straße, Hausnummer, PLZ, Ort"
+              value={formData.address}
+              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+            />
+            <div className="absolute inset-0 bg-green-50 opacity-0 group-hover:opacity-10 rounded-xl transition-opacity duration-300 z-10" />
           </div>
 
-          <button
-            type="submit"
-            className="w-full flex items-center justify-center px-8 py-4 
-              border border-transparent text-base font-medium rounded-xl 
-              text-white bg-green-600 relative overflow-hidden
-              transition-all duration-300 
-              hover:bg-green-700 hover:shadow-xl hover:scale-[1.02]
-              group"
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-green-600 
-              opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            <div className="relative flex items-center gap-2">
-              <span className="transition-transform duration-300 group-hover:translate-x-[-4px]">
-                Jetzt Gratis Proberechnung erstellen
-              </span>
-              <svg 
-                className="w-5 h-5 transform transition-all duration-300 group-hover:translate-x-2" 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+          <div className="relative group z-10">
+            <input
+              type="number"
+              required
+              min="1900"
+              max={new Date().getFullYear()}
+              className="block w-full px-4 py-3 rounded-xl border-2 border-gray-200 
+                focus:ring-2 focus:ring-green-500 focus:border-transparent
+                transition-all duration-300 
+                hover:border-green-300 hover:shadow-lg
+                group-hover:translate-y-[-2px]
+                relative z-20"
+              placeholder="Baujahr, z.B. 1985"
+              value={formData.buildingYear}
+              onChange={(e) => setFormData({ ...formData, buildingYear: e.target.value })}
+            />
+            <div className="absolute inset-0 bg-green-50 opacity-0 group-hover:opacity-10 rounded-xl transition-opacity duration-300 z-10" />
+          </div>
+
+          <div className="relative group z-10">
+            <select
+              required
+              className="block w-full px-4 py-3 rounded-xl border-2 border-gray-200 
+                focus:ring-2 focus:ring-green-500 focus:border-transparent
+                transition-all duration-300 
+                hover:border-green-300 hover:shadow-lg
+                group-hover:translate-y-[-2px]
+                appearance-none cursor-pointer
+                relative z-20"
+              value={formData.buildingType}
+              onChange={(e) => setFormData({ ...formData, buildingType: e.target.value })}
+            >
+              <option value="house">Einfamilienhaus</option>
+              <option value="apartment">Mehrfamilienhaus</option>
+              <option value="commercial">Gewerbeimmobilie</option>
+            </select>
+            <div className="absolute inset-0 bg-green-50 opacity-0 group-hover:opacity-10 rounded-xl transition-opacity duration-300 z-10" />
+            <div className="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none
+              transition-transform duration-300 group-hover:translate-x-1 z-20">
+              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </div>
-          </button>
-        </form>
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          className="w-full flex items-center justify-center px-8 py-4 
+            border border-transparent text-base font-medium rounded-xl 
+            text-white bg-green-600 relative overflow-hidden
+            transition-all duration-300 
+            hover:bg-green-700 hover:shadow-xl hover:scale-[1.02]
+            group"
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-green-600 
+            opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <div className="relative flex items-center gap-2">
+            <span className="transition-transform duration-300 group-hover:translate-x-[-4px]">
+              Jetzt Gratis Proberechnung erstellen
+            </span>
+            <svg 
+              className="w-5 h-5 transform transition-all duration-300 group-hover:translate-x-2" 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
+          </div>
+        </button>
       </div>
     )
   }
@@ -317,7 +317,7 @@ export default function HeroInput() {
                 </h2>
                 
                 <p className="text-lg text-gray-600 mt-8">
-                  Sparen Sie sich den Vor-Ort-Termin und erstellen Sie Ihren amtlich anerkannten Energieausweis komplett online.
+                  Sparen Sie sich den Vor-Ort-Termin und erstellen Sie Ihren amtlich anerkannten Energieausweis komplett online. Starten Sie jetzt mit Ihrer kostenlosen Proberechnung.
                 </p>
               </div>
 
@@ -325,7 +325,7 @@ export default function HeroInput() {
               <div className="grid grid-cols-3 gap-4 mt-12">
                 <div className="bg-white p-4 rounded-xl shadow-lg text-center">
                   <span className="text-green-600 text-2xl font-bold block mb-1">✓</span>
-                  <span className="text-sm font-medium">TÜV-geprüft</span>
+                  <span className="text-sm font-medium">Gratis Proberechnung</span>
                 </div>
                 <div className="bg-white p-4 rounded-xl shadow-lg text-center">
                   <span className="text-green-600 text-2xl font-bold block mb-1">⚡</span>
@@ -341,12 +341,20 @@ export default function HeroInput() {
             {/* Right Column - Form */}
             <div className="mx-[10%] relative z-10">
               <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="bg-white rounded-3xl shadow-2xl overflow-hidden
-                  transform transition-all duration-300 
-                  hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)]
-                  group relative"
+                initial={{ opacity: 0 }}
+                animate={{ 
+                  opacity: 1,
+                  y: isFormFocused ? 0 : [0, -16, 0]  // 16px up and down movement
+                }}
+                transition={{
+                  opacity: { duration: 0.6 },
+                  y: {
+                    duration: 3,
+                    repeat: isFormFocused ? 0 : Infinity,
+                    ease: "easeInOut"
+                  }
+                }}
+                className="bg-white rounded-3xl shadow-2xl overflow-hidden transform transition-all duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] group relative"
               >
                 {/* Move background elements behind the content */}
                 <div className="absolute -top-4 -right-4 w-20 h-20 bg-green-50 rounded-full 
@@ -380,7 +388,13 @@ export default function HeroInput() {
                   </div>
 
                   <div className="p-8">
-                    {renderFormContent()}
+                    <form 
+                      onSubmit={handleSubmit}
+                      onFocus={handleFormFocus}
+                      className="space-y-6"
+                    >
+                      {renderFormContent()}
+                    </form>
                   </div>
 
                   {/* Social Proof */}

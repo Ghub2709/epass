@@ -29,20 +29,20 @@ export default function Process() {
     },
     {
       number: "2",
-      title: "Berechnung prüfen",
-      description: "Wir erstellen eine kostenlose Proberechnung für Sie und senden diese per E-Mail zu",
+      title: "Gratis Probeberechnung prüfen",
+      description: "Wir erstellen eine kostenlose Proberechnung für Sie und senden diese per E-Mail oder WhatsApp zu",
       icon: "📊"
     },
     {
       number: "3",
-      title: "Bezahlen",
-      description: "Bei Zufriedenheit können Sie direkt online bezahlen - sicher und unkompliziert",
+      title: "Bestellen und Bezahlen",
+      description: "Bei Zufriedenheit können Sie direkt online bestellen und bezahlen - sicher und unkompliziert",
       icon: "💳"
     },
     {
       number: "4",
       title: "Energieausweis erhalten",
-      description: "Sie erhalten Ihren Energieausweis innerhalb von 24 Stunden per E-Mail",
+      description: "Sie erhalten Ihren bereits beim DIBt registrierten Energieausweis innerhalb von 24 Stunden per E-Mail oder WhatsApp",
       icon: "📨"
     }
   ]
