@@ -102,7 +102,7 @@ export default function HeroInput() {
               Ihre Proberechnung ist fertig! 🎉
             </h3>
             <p className="text-gray-600">
-              Wie möchten Sie Ihre Proberechnung erhalten?
+            Wie möchten Sie Ihre Proberechnung und Ihr verbindliches Angebot zur Ausstellung Ihres Energieausweises erhalten?
             </p>
           </div>
 
