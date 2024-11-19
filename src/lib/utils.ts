@@ -1,9 +1,4 @@
-export function getAssetPath(path: string): string {
-  // Check if we're in development
-  if (process.env.NODE_ENV === 'development') {
-    return `/${path}`
-  }
-  
-  // In production, prepend the basePath
-  return `/epass/${path}`
+export const getAssetPath = (path: string) => {
+  // Remove '/epass' from the path when using custom domain
+  return path.startsWith('/') ? path : `/${path}`
 } 
