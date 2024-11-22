@@ -1,6 +1,6 @@
 'use client'
 
-import ContactForm from './ContactForm.tsx'
+import ContactForm from './ContactForm'
 
 export default function Contact() {
   return (
