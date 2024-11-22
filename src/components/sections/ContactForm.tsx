@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { motion, useAnimationControls } from 'framer-motion'
 
 export default function ContactForm() {
   const [formStep, setFormStep] = useState<'initial' | 'loading' | 'email'>('initial')
@@ -15,6 +15,24 @@ export default function ContactForm() {
   const [progress, setProgress] = useState(0)
   const [visibleAvatars, setVisibleAvatars] = useState(4);
   const [orderCount, setOrderCount] = useState(23);
+  const controls = useAnimationControls()
+  const [isInteracting, setIsInteracting] = useState(false)
+
+  useEffect(() => {
+    if (!isInteracting && formStep === 'initial') {
+      controls.start({
+        y: [0, -20, 0],
+        transition: {
+          duration: 4,
+          ease: "easeInOut",
+          repeat: Infinity,
+        }
+      })
+    } else {
+      controls.stop()
+      controls.set({ y: 0 })
+    }
+  }, [isInteracting, formStep, controls])
 
   useEffect(() => {
     if (formStep === 'loading') {
@@ -42,18 +60,16 @@ export default function ContactForm() {
 
   useEffect(() => {
     if (formStep === 'initial') {
+      let currentAvatar = 4;
       const interval = setInterval(() => {
-        setVisibleAvatars((prev) => {
-          const nextAvatarCount = prev >= 7 ? 4 : prev + 1;
-          
-          if (nextAvatarCount === 4) {
-            setOrderCount(23);
-          } else if (nextAvatarCount > 4) {
-            setOrderCount(23 + (nextAvatarCount - 4));
-          }
-          
-          return nextAvatarCount;
-        });
+        if (currentAvatar >= 7) {
+          clearInterval(interval);
+          return;
+        }
+        
+        currentAvatar++;
+        setVisibleAvatars(currentAvatar);
+        setOrderCount(23 + (currentAvatar - 4));
       }, 2000);
 
       return () => clearInterval(interval);
@@ -316,10 +332,15 @@ export default function ContactForm() {
         </p>
       </div>
 
-      <div className={formWrapper}>
+      <div className={`${formWrapper} px-[5%] sm:px-0`}>
         <motion.div
+          animate={controls}
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1 }}
+          onHoverStart={() => setIsInteracting(true)}
+          onHoverEnd={() => setIsInteracting(false)}
+          onFocus={() => setIsInteracting(true)}
+          onBlur={() => setIsInteracting(false)}
           className="bg-white rounded-3xl shadow-2xl overflow-hidden transform transition-all duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] group relative"
         >
           {/* Background Elements */}
@@ -355,7 +376,7 @@ export default function ContactForm() {
 
             {/* Social Proof */}
             <div className="px-8 py-4 bg-gray-50 border-t border-gray-100">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-4 sm:gap-0">
                 <div className="flex -space-x-2">
                   {avatars.slice(0, visibleAvatars).map((avatar, i) => (
                     <motion.img
@@ -373,7 +394,7 @@ export default function ContactForm() {
                   ))}
                 </div>
                 <motion.p 
-                  className="text-sm text-gray-600"
+                  className="text-sm text-gray-600 text-center sm:text-left"
                   key={visibleAvatars}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
