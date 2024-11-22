@@ -13,6 +13,8 @@ export default function ContactForm() {
     phone: ''
   })
   const [progress, setProgress] = useState(0)
+  const [visibleAvatars, setVisibleAvatars] = useState(4);
+  const [orderCount, setOrderCount] = useState(23);
 
   useEffect(() => {
     if (formStep === 'loading') {
@@ -37,6 +39,29 @@ export default function ContactForm() {
       }
     }
   }, [formStep])
+
+  useEffect(() => {
+    if (formStep === 'initial') {
+      const interval = setInterval(() => {
+        setVisibleAvatars((prev) => {
+          const nextAvatarCount = prev >= 7 ? 4 : prev + 1;
+          
+          if (nextAvatarCount === 4) {
+            setOrderCount(23);
+          } else if (nextAvatarCount > 4) {
+            setOrderCount(23 + (nextAvatarCount - 4));
+          }
+          
+          return nextAvatarCount;
+        });
+      }, 2000);
+
+      return () => clearInterval(interval);
+    } else {
+      setVisibleAvatars(7);
+      setOrderCount(26);
+    }
+  }, [formStep]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -64,7 +89,7 @@ export default function ContactForm() {
             </div>
           </div>
           <p className="text-gray-600 text-center text-lg">
-            Wir prüfen Ihre Eingaben, einen kleinen Moment Geduld bitte...
+            Wir prüfen Ihre Eingaben und erstellen Ihre Proberechnung ...
           </p>
         </div>
       )
@@ -269,6 +294,16 @@ export default function ContactForm() {
     )
   }
 
+  const avatars = [
+    '/images/avatars/avatar1.jpeg',
+    '/images/avatars/avatar2.jpeg',
+    '/images/avatars/avatar3.jpeg',
+    '/images/avatars/avatar4.jpeg',
+    '/images/avatars/avatar5.jpeg',
+    '/images/avatars/avatar6.jpeg',
+    '/images/avatars/avatar7.jpeg'
+  ];
+
   return (
     <section id="contact-form" className="py-16 bg-gray-50">
       <div className="text-center max-w-4xl mx-auto mb-12">
@@ -322,13 +357,30 @@ export default function ContactForm() {
             <div className="px-8 py-4 bg-gray-50 border-t border-gray-100">
               <div className="flex items-center justify-between">
                 <div className="flex -space-x-2">
-                  {[1,2,3,4].map((i) => (
-                    <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-gray-200" />
+                  {avatars.slice(0, visibleAvatars).map((avatar, i) => (
+                    <motion.img
+                      key={i}
+                      src={avatar}
+                      alt={`Kunde ${i + 1}`}
+                      className="w-8 h-8 rounded-full border-2 border-white object-cover"
+                      initial={{ opacity: 0, scale: 0.5 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.3 }}
+                      onError={(e) => {
+                        e.currentTarget.className = "w-8 h-8 rounded-full border-2 border-white bg-gray-200"
+                      }}
+                    />
                   ))}
                 </div>
-                <p className="text-sm text-gray-600">
-                  <span className="font-semibold">127 Personen</span> haben heute bereits bestellt
-                </p>
+                <motion.p 
+                  className="text-sm text-gray-600"
+                  key={visibleAvatars}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <span className="font-semibold">{orderCount} Personen</span> haben heute bereits bestellt
+                </motion.p>
               </div>
             </div>
           </div>
