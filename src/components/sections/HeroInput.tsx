@@ -1,287 +1,10 @@
 'use client'
-import { useState, useEffect, useRef } from 'react'
+import AddressForm from '@/components/AddressForm'
 import { motion } from 'framer-motion'
-import { getAssetPath } from '@/lib/utils'
+import { useState } from 'react'
 
 export default function HeroInput() {
-  const [formStep, setFormStep] = useState<'initial' | 'loading' | 'email'>('initial')
-  const [formData, setFormData] = useState({
-    address: '',
-    buildingYear: '',
-    buildingType: 'house',
-    contactMethod: '',
-    email: '',
-    phone: ''
-  })
-  const [progress, setProgress] = useState(0)
-  const [isMuted, setIsMuted] = useState(true)
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const [isFormFocused, setIsFormFocused] = useState(false)
-
-  useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.load()
-    }
-  }, [])
-
-  useEffect(() => {
-    if (formStep === 'loading') {
-      const duration = 5000
-      const interval = 50
-      const steps = duration / interval
-      const increment = 100 / steps
-
-      const timer = setInterval(() => {
-        setProgress(prev => {
-          const next = Math.min(prev + increment, 100)
-          if (next >= 100) {
-            clearInterval(timer)
-          }
-          return next
-        })
-      }, interval)
-
-      return () => {
-        clearInterval(timer)
-        setProgress(0)
-      }
-    }
-  }, [formStep])
-
-  const toggleMute = () => {
-    if (videoRef.current) {
-      videoRef.current.muted = !videoRef.current.muted
-      setIsMuted(!isMuted)
-    }
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setFormStep('loading')
-    setTimeout(() => setFormStep('email'), 5000)
-  }
-
-  const handleEmailSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log('Form data:', formData)
-  }
-
-  const handleFormFocus = () => {
-    setIsFormFocused(true)
-  }
-
-  const renderFormContent = () => {
-    if (formStep === 'loading') {
-      return (
-        <div className="flex flex-col items-center justify-center space-y-6">
-          <div className="relative">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary-600"></div>
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-              <span className="text-primary-600 text-xl font-semibold">
-                {Math.round(progress)}%
-              </span>
-            </div>
-          </div>
-          <p className="text-gray-600 text-center text-lg">
-            Wir prüfen Ihre Eingaben, einen kleinen Moment Geduld bitte...
-          </p>
-        </div>
-      )
-    }
-
-    if (formStep === 'email') {
-      return (
-        <div>
-          <div className="text-center mb-6">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-100 rounded-full mb-4">
-              <svg className="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">
-              Ihre Proberechnung ist fertig! 🎉
-            </h3>
-            <p className="text-gray-600">
-            Wie möchten Sie Ihre Proberechnung und Ihr verbindliches Angebot zur Ausstellung Ihres Energieausweises erhalten?
-            </p>
-          </div>
-
-          {!formData.contactMethod ? (
-            <div className="space-y-4">
-              <button
-                type="button"
-                onClick={() => setFormData(prev => ({ ...prev, contactMethod: 'email' }))}
-                className="w-full flex items-center justify-between px-6 py-4 bg-white border-2 border-gray-200 rounded-xl hover:border-green-500 hover:shadow-lg transition-all duration-300 group"
-              >
-                <div className="flex items-center gap-3">
-                  <svg className="w-6 h-6 text-gray-400 group-hover:text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                  <span className="font-medium">Per E-Mail</span>
-                </div>
-                <svg className="w-5 h-5 text-gray-400 group-hover:text-green-500 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setFormData(prev => ({ ...prev, contactMethod: 'whatsapp' }))}
-                className="w-full flex items-center justify-between px-6 py-4 bg-white border-2 border-gray-200 rounded-xl hover:border-green-500 hover:shadow-lg transition-all duration-300 group"
-              >
-                <div className="flex items-center gap-3">
-                  <svg className="w-6 h-6 text-gray-400 group-hover:text-green-500" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
-                  </svg>
-                  <span className="font-medium">Per WhatsApp</span>
-                </div>
-                <svg className="w-5 h-5 text-gray-400 group-hover:text-green-500 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              <div className="relative group">
-                {formData.contactMethod === 'email' ? (
-                  <input
-                    type="email"
-                    required
-                    className="block w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    placeholder="ihre@email.de"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  />
-                ) : (
-                  <input
-                    type="tel"
-                    required
-                    pattern="^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$"
-                    className="block w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    placeholder="Ihre Handynummer"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  />
-                )}
-              </div>
-
-              <button
-                type="submit"
-                className="w-full flex items-center justify-center px-8 py-4 border border-transparent text-base font-medium rounded-xl text-white bg-green-600 hover:bg-green-700 transition-colors group"
-              >
-                <span>Ja! Unterlagen {formData.contactMethod === 'email' ? 'per E-Mail' : 'per WhatsApp'} zusenden</span>
-                <svg className="w-5 h-5 ml-2 transform transition-all duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                </svg>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setFormData(prev => ({ ...prev, contactMethod: '', email: '', phone: '' }))}
-                className="w-full text-center text-sm text-gray-500 hover:text-gray-700 mt-4"
-              >
-                ← Andere Kontaktmethode wählen
-              </button>
-            </div>
-          )}
-        </div>
-      )
-    }
-
-    return (
-      <div className="space-y-6">
-        <div className="space-y-4">
-          <div className="relative group z-10">
-            <input
-              type="text"
-              required
-              className="block w-full px-4 py-3 rounded-xl border-2 border-gray-200 
-                focus:ring-2 focus:ring-green-500 focus:border-transparent
-                transition-all duration-300 
-                hover:border-green-300 hover:shadow-lg
-                group-hover:translate-y-[-2px]
-                relative z-20"
-              placeholder="Straße, Hausnummer, PLZ, Ort"
-              value={formData.address}
-              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-            />
-            <div className="absolute inset-0 bg-green-50 opacity-0 group-hover:opacity-10 rounded-xl transition-opacity duration-300 z-10" />
-          </div>
-
-          <div className="relative group z-10">
-            <input
-              type="number"
-              required
-              min="1900"
-              max={new Date().getFullYear()}
-              className="block w-full px-4 py-3 rounded-xl border-2 border-gray-200 
-                focus:ring-2 focus:ring-green-500 focus:border-transparent
-                transition-all duration-300 
-                hover:border-green-300 hover:shadow-lg
-                group-hover:translate-y-[-2px]
-                relative z-20"
-              placeholder="Baujahr, z.B. 1985"
-              value={formData.buildingYear}
-              onChange={(e) => setFormData({ ...formData, buildingYear: e.target.value })}
-            />
-            <div className="absolute inset-0 bg-green-50 opacity-0 group-hover:opacity-10 rounded-xl transition-opacity duration-300 z-10" />
-          </div>
-
-          <div className="relative group z-10">
-            <select
-              required
-              className="block w-full px-4 py-3 rounded-xl border-2 border-gray-200 
-                focus:ring-2 focus:ring-green-500 focus:border-transparent
-                transition-all duration-300 
-                hover:border-green-300 hover:shadow-lg
-                group-hover:translate-y-[-2px]
-                appearance-none cursor-pointer
-                relative z-20"
-              value={formData.buildingType}
-              onChange={(e) => setFormData({ ...formData, buildingType: e.target.value })}
-            >
-              <option value="house">Einfamilienhaus</option>
-              <option value="apartment">Mehrfamilienhaus</option>
-              <option value="commercial">Gewerbeimmobilie</option>
-            </select>
-            <div className="absolute inset-0 bg-green-50 opacity-0 group-hover:opacity-10 rounded-xl transition-opacity duration-300 z-10" />
-            <div className="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none
-              transition-transform duration-300 group-hover:translate-x-1 z-20">
-              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        <button
-          type="submit"
-          className="w-full flex items-center justify-center px-8 py-4 
-            border border-transparent text-base font-medium rounded-xl 
-            text-white bg-green-600 relative overflow-hidden
-            transition-all duration-300 
-            hover:bg-green-700 hover:shadow-xl hover:scale-[1.02]
-            group"
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-green-600 
-            opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          <div className="relative flex items-center gap-2">
-            <span className="transition-transform duration-300 group-hover:translate-x-[-4px]">
-              Jetzt Gratis Proberechnung erstellen
-            </span>
-            <svg 
-              className="w-5 h-5 transform transition-all duration-300 group-hover:translate-x-2" 
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-            </svg>
-          </div>
-        </button>
-      </div>
-    )
-  }
+  const [isVideoOpen, setIsVideoOpen] = useState(false);
 
   return (
     <section className="relative bg-gradient-to-b from-green-50 via-white to-white min-h-[80vh] flex items-center">
@@ -294,17 +17,29 @@ export default function HeroInput() {
               animate={{ opacity: 1, x: 0 }}
               className="space-y-12"
             >
-              {/* Trust Badges with more space */}
-              <div className="flex flex-wrap gap-4 mb-8">
-                <span className="bg-white px-4 py-2 rounded-full text-sm font-medium shadow-sm border border-green-100 flex items-center">
-                  ⭐️ <span className="text-green-700 font-bold mx-1">4.9/5</span> von über 2.000 Kunden
-                </span>
-                <span className="bg-white px-4 py-2 rounded-full text-sm font-medium shadow-sm border border-green-100 flex items-center">
-                  ✓ <span className="text-green-700 font-bold mx-1">50.000+</span> ausgestellte Ausweise
-                </span>
+              {/* Vorteile am Anfang */}
+              <div className="flex flex-row gap-6 mb-8 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
+                <div className="flex items-center gap-3 whitespace-nowrap">
+                  <svg className="w-5 h-5 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-gray-600">Gratis Proberechnung</span>
+                </div>
+                <div className="flex items-center gap-3 whitespace-nowrap">
+                  <svg className="w-5 h-5 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  <span className="text-gray-600">Express 24h</span>
+                </div>
+                <div className="flex items-center gap-3 whitespace-nowrap">
+                  <svg className="w-5 h-5 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="text-gray-600">Bestpreis-Garantie</span>
+                </div>
               </div>
 
-              {/* Main content with increased spacing */}
+              {/* Main content */}
               <div className="space-y-8">
                 <h1 className="text-4xl lg:text-5xl font-bold leading-tight">
                   <span className="text-green-600">In 24 Stunden</span> zu
@@ -317,105 +52,74 @@ export default function HeroInput() {
                 </h2>
                 
                 <p className="text-lg text-gray-600 mt-8">
-                  Sparen Sie sich den Vor-Ort-Termin und erstellen Sie Ihren amtlich anerkannten Energieausweis komplett online. Starten Sie jetzt mit Ihrer kostenlosen Proberechnung.
+                  Sparen Sie sich den Vor-Ort-Termin und erstellen Sie Ihren amtlich anerkannten Energieausweis komplett online. Starten Sie jetzt mit Ihrer kostenlosen Proberechnung oder werfen Sie einen Blick in unser Erklärvideo, beides lohnt sich.
                 </p>
-              </div>
 
-              {/* Trust Badges with more top margin */}
-              <div className="grid grid-cols-3 gap-4 mt-12">
-                <div className="bg-white p-4 rounded-xl shadow-lg text-center">
-                  <span className="text-green-600 text-2xl font-bold block mb-1">✓</span>
-                  <span className="text-sm font-medium">Gratis Proberechnung</span>
-                </div>
-                <div className="bg-white p-4 rounded-xl shadow-lg text-center">
-                  <span className="text-green-600 text-2xl font-bold block mb-1">⚡</span>
-                  <span className="text-sm font-medium">Express in 24h</span>
-                </div>
-                <div className="bg-white p-4 rounded-xl shadow-lg text-center">
-                  <span className="text-green-600 text-2xl font-bold block mb-1">€</span>
-                  <span className="text-sm font-medium">Bestpreis-Garantie</span>
-                </div>
+                {/* Video Button */}
+                <button
+                  onClick={() => setIsVideoOpen(true)}
+                  className="flex items-center gap-3 px-6 py-3 bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 group"
+                >
+                  <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                    <svg 
+                      className="w-6 h-6 text-green-600 transform group-hover:scale-110 transition-transform" 
+                      fill="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M8 5v14l11-7z"/>
+                    </svg>
+                  </div>
+                  <span className="font-medium">Erklärvideo ansehen</span>
+                </button>
               </div>
             </motion.div>
 
             {/* Right Column - Form */}
             <div className="mx-[10%] relative z-10">
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ 
-                  opacity: 1,
-                  y: isFormFocused ? 0 : [0, -16, 0]  // 16px up and down movement
-                }}
-                transition={{
-                  opacity: { duration: 0.6 },
-                  y: {
-                    duration: 3,
-                    repeat: isFormFocused ? 0 : Infinity,
-                    ease: "easeInOut"
-                  }
-                }}
-                className="bg-white rounded-3xl shadow-2xl overflow-hidden transform transition-all duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] group relative"
-              >
-                {/* Move background elements behind the content */}
-                <div className="absolute -top-4 -right-4 w-20 h-20 bg-green-50 rounded-full 
-                  opacity-50 blur-xl transition-all duration-300 
-                  group-hover:scale-150 -z-10" />
-                <div className="absolute -bottom-4 -left-4 w-24 h-24 bg-blue-50 rounded-full 
-                  opacity-50 blur-xl transition-all duration-300 
-                  group-hover:scale-150 -z-10" />
-
-                <div className="relative z-20">
-                  {/* Progress Bar - Modified to cap at 96% for email step */}
-                  <div className="bg-green-50 px-6 py-3">
-                    <div className="flex justify-between text-sm text-green-800 mb-2">
-                      <span>Fortschritt</span>
-                      <span>
-                        {formStep === 'initial' ? '0%' : 
-                         formStep === 'loading' ? `${Math.round(progress)}%` : 
-                         '96%'}
-                      </span>
-                    </div>
-                    <div className="h-2 bg-green-100 rounded-full">
-                      <div 
-                        className="h-2 bg-green-600 rounded-full transition-all duration-300"
-                        style={{ 
-                          width: formStep === 'initial' ? '0%' : 
-                                 formStep === 'loading' ? `${progress}%` : 
-                                 '96%' 
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="p-8">
-                    <form 
-                      onSubmit={handleSubmit}
-                      onFocus={handleFormFocus}
-                      className="space-y-6"
-                    >
-                      {renderFormContent()}
-                    </form>
-                  </div>
-
-                  {/* Social Proof */}
-                  <div className="px-8 py-4 bg-gray-50 border-t border-gray-100">
-                    <div className="flex items-center justify-between">
-                      <div className="flex -space-x-2">
-                        {[1,2,3,4].map((i) => (
-                          <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-gray-200" />
-                        ))}
-                      </div>
-                      <p className="text-sm text-gray-600">
-                        <span className="font-semibold">127 Personen</span> haben heute bereits bestellt
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
+              <AddressForm isHeroVariant={true} />
             </div>
           </div>
         </div>
       </div>
+
+      {/* Video Modal */}
+      {isVideoOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4"
+          onClick={() => setIsVideoOpen(false)}
+        >
+          <div 
+            className="relative w-full max-w-[540px] bg-black rounded-xl overflow-hidden"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <button
+              onClick={() => setIsVideoOpen(false)}
+              className="absolute top-4 right-4 text-white hover:text-gray-300 z-10 bg-black bg-opacity-50 rounded-full p-2"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            {/* Video Container mit 9:16 Aspect Ratio */}
+            <div className="relative pt-[177.78%]">
+              <video
+                className="absolute inset-0 w-full h-full object-contain bg-black"
+                controls
+                autoPlay
+                playsInline
+                muted={false}
+                preload="auto"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <source src="/videos/StephanGrosser.mp4" type="video/mp4" />
+                Ihr Browser unterstützt keine Videos.
+              </video>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   )
 } 

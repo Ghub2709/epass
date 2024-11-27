@@ -1,6 +1,5 @@
 'use client'
 import { motion } from 'framer-motion'
-import { useState } from 'react'
 
 const testimonials = [
   {
@@ -8,7 +7,7 @@ const testimonials = [
     location: "München",
     text: "Super schneller Service! Innerhalb von 24 Stunden hatte ich meinen Energieausweis. Sehr zu empfehlen.",
     rating: 5,
-    image: "/testimonials/person1.jpg" // Add actual image paths
+    image: "/testimonials/person1.jpg"
   },
   {
     name: "Sandra Weber",
@@ -27,111 +26,92 @@ const testimonials = [
 ]
 
 export default function Testimonials() {
-  const [activeIndex, setActiveIndex] = useState(0)
-
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.3
-      }
-    }
-  }
-
-  const item = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0 }
-  }
-
   return (
-    <section className="py-20 bg-gray-50">
+    <section className="py-16 bg-white">
       <div className="container mx-auto px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-12"
-        >
-          <h2 className="text-3xl font-bold mb-4">
-            Was unsere Kunden sagen
-          </h2>
-          <p className="text-gray-600">
-            Tausende zufriedene Kunden vertrauen unserem Service
-          </p>
-        </motion.div>
-
-        <motion.div
-          variants={container}
-          initial="hidden"
-          animate="show"
-          className="grid md:grid-cols-3 gap-8"
-        >
-          {testimonials.map((testimonial, index) => (
-            <motion.div
-              key={index}
-              variants={item}
-              whileHover={{ scale: 1.03 }}
-              className="bg-white p-6 rounded-lg shadow-lg"
-            >
-              <div className="flex items-center mb-4">
-                <div className="w-12 h-12 bg-gray-200 rounded-full overflow-hidden mr-4">
-                  {/* Add actual images later */}
-                  <div className="w-full h-full bg-blue-600/20" />
-                </div>
-                <div>
-                  <h3 className="font-semibold">{testimonial.name}</h3>
-                  <p className="text-gray-600 text-sm">{testimonial.location}</p>
-                </div>
-              </div>
-              <div className="flex mb-4">
-                {[...Array(testimonial.rating)].map((_, i) => (
-                  <motion.svg
-                    key={i}
-                    initial={{ opacity: 0, scale: 0 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: i * 0.1 }}
-                    className="w-5 h-5 text-yellow-400 fill-current"
-                    viewBox="0 0 20 20"
-                  >
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </motion.svg>
-                ))}
-              </div>
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.4 }}
-                className="text-gray-600"
-              >
-                {testimonial.text}
-              </motion.p>
-            </motion.div>
-          ))}
-        </motion.div>
-
-        {/* Trust indicators */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-          className="mt-16 text-center"
-        >
-          <div className="flex justify-center items-center space-x-8">
-            <div className="text-center">
-              <div className="text-4xl font-bold text-blue-600">1000+</div>
-              <div className="text-gray-600">Zufriedene Kunden</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold text-blue-600">24h</div>
-              <div className="text-gray-600">Bearbeitungszeit</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold text-blue-600">100%</div>
-              <div className="text-gray-600">Rechtssicher</div>
-            </div>
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-wrap justify-center gap-4 mb-12">
+            <span className="bg-white px-6 py-3 rounded-full text-lg font-medium shadow-sm border border-green-100 flex items-center">
+              ⭐️ <span className="text-green-700 font-bold mx-1">4.9/5</span> von über 2.000 Kunden
+            </span>
+            <span className="bg-white px-6 py-3 rounded-full text-lg font-medium shadow-sm border border-green-100 flex items-center">
+              ✓ <span className="text-green-700 font-bold mx-1">50.000+</span> ausgestellte Ausweise
+            </span>
           </div>
-        </motion.div>
+
+          <h2 className="text-4xl font-bold text-center mb-4">
+            Warum über 50.000 Kunden uns vertrauen
+          </h2>
+          <p className="text-xl text-gray-600 text-center mb-16">
+            Schnell, einfach und kostengünstig zum rechtssicheren Energieausweis
+          </p>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <motion.div
+              whileHover={{ scale: 1.03 }}
+              className="bg-white p-6 rounded-xl shadow-lg"
+            >
+              <div className="bg-green-50 text-green-600 text-sm font-medium px-3 py-1 rounded-full w-fit mb-6">
+                GARANTIERT
+              </div>
+              <div className="text-green-600 mb-4">
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold mb-2">Express in 24 Stunden</h3>
+              <p className="text-gray-600">Garantierte Ausstellung innerhalb eines Werktages</p>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ scale: 1.03 }}
+              className="bg-white p-6 rounded-xl shadow-lg"
+            >
+              <div className="bg-green-50 text-green-600 text-sm font-medium px-3 py-1 rounded-full w-fit mb-6">
+                AMTLICH
+              </div>
+              <div className="text-green-600 mb-4">
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold mb-2">100% Rechtssicher</h3>
+              <p className="text-gray-600">Offiziell beim DIBt registriert und anerkannt</p>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ scale: 1.03 }}
+              className="bg-white p-6 rounded-xl shadow-lg"
+            >
+              <div className="bg-green-50 text-green-600 text-sm font-medium px-3 py-1 rounded-full w-fit mb-6">
+                SPARPREIS
+              </div>
+              <div className="text-green-600 mb-4">
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold mb-2">Bis zu 40% günstiger</h3>
+              <p className="text-gray-600">Sparen Sie im Vergleich zu lokalen Anbietern</p>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ scale: 1.03 }}
+              className="bg-white p-6 rounded-xl shadow-lg"
+            >
+              <div className="bg-green-50 text-green-600 text-sm font-medium px-3 py-1 rounded-full w-fit mb-6">
+                ZEITSPAREND
+              </div>
+              <div className="text-green-600 mb-4">
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold mb-2">Komplett Online</h3>
+              <p className="text-gray-600">Kein Vor-Ort Termin notwendig - sparen Sie Zeit</p>
+            </motion.div>
+          </div>
+        </div>
       </div>
     </section>
   )
