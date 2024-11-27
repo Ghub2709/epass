@@ -4,6 +4,7 @@ import { getAssetPath } from '@/lib/utils'
 
 export default function Process() {
   const [isMuted, setIsMuted] = useState(true)
+  const [isPlaying, setIsPlaying] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
 
   const toggleMute = () => {
@@ -12,6 +13,18 @@ export default function Process() {
       setIsMuted(!isMuted)
     }
   }
+
+  const handleVideoClick = () => {
+    if (!videoRef.current) return;
+    
+    if (isPlaying) {
+      videoRef.current.pause();
+    } else {
+      videoRef.current.muted = false;
+      videoRef.current.play();
+    }
+    setIsPlaying(!isPlaying);
+  };
 
   const scrollToForm = () => {
     const formElement = document.getElementById('contact-form');
@@ -94,16 +107,59 @@ export default function Process() {
 
           {/* Right Column - Video */}
           <div className="relative aspect-[9/16] w-full max-w-[400px] mx-auto rounded-xl overflow-hidden shadow-xl">
+            {!isPlaying && (
+              <div className="absolute inset-0 flex items-center justify-center z-10 bg-black bg-opacity-40">
+                <button
+                  onClick={handleVideoClick}
+                  className="flex items-center gap-3 px-6 py-3 bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 group"
+                >
+                  <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                    <svg 
+                      className="w-6 h-6 text-green-600 transform group-hover:scale-110 transition-transform" 
+                      fill="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M8 5v14l11-7z"/>
+                    </svg>
+                  </div>
+                  <span className="font-medium">Video abspielen</span>
+                </button>
+              </div>
+            )}
+            
             <video
               ref={videoRef}
-              autoPlay
-              muted
               loop
               playsInline
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover cursor-pointer"
+              onClick={handleVideoClick}
             >
               <source src={getAssetPath('videos/LisaMeyerdierks.mp4')} type="video/mp4" />
             </video>
+
+            {/* Play/Pause Overlay - nur sichtbar wenn Video spielt */}
+            {isPlaying && (
+              <div 
+                className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 hover:bg-opacity-30 transition-all duration-300 cursor-pointer"
+                onClick={handleVideoClick}
+              >
+                <div className="opacity-0 hover:opacity-100 transition-opacity duration-300">
+                  <svg 
+                    className="w-16 h-16 text-white" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round" 
+                      strokeWidth={2} 
+                      d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+              </div>
+            )}
 
             {/* Video Controls */}
             <div className="absolute bottom-3 right-3 flex gap-2">

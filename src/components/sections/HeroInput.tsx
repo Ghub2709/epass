@@ -10,28 +10,28 @@ export default function HeroInput() {
     <section className="relative bg-gradient-to-b from-green-50 via-white to-white min-h-[80vh] flex items-center">
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-12 items-center">
             {/* Left Column - Headline and Trust Badges */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="space-y-12"
+              className="space-y-12 text-left lg:text-left"
             >
-              {/* Vorteile am Anfang */}
-              <div className="flex flex-row gap-6 mb-8 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
-                <div className="flex items-center gap-3 whitespace-nowrap">
+              {/* Vorteile am Anfang - zentriert auf Mobile */}
+              <div className="flex flex-wrap justify-center lg:justify-start gap-4 mb-8">
+                <div className="flex items-center gap-3 whitespace-normal">
                   <svg className="w-5 h-5 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                   <span className="text-gray-600">Gratis Proberechnung</span>
                 </div>
-                <div className="flex items-center gap-3 whitespace-nowrap">
+                <div className="flex items-center gap-3 whitespace-normal">
                   <svg className="w-5 h-5 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                   <span className="text-gray-600">Express 24h</span>
                 </div>
-                <div className="flex items-center gap-3 whitespace-nowrap">
+                <div className="flex items-center gap-3 whitespace-normal">
                   <svg className="w-5 h-5 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
@@ -39,8 +39,8 @@ export default function HeroInput() {
                 </div>
               </div>
 
-              {/* Main content */}
-              <div className="space-y-8">
+              {/* Main content - zentriert auf Mobile */}
+              <div className="space-y-8 text-center lg:text-left">
                 <h1 className="text-4xl lg:text-5xl font-bold leading-tight">
                   <span className="text-green-600">In 24 Stunden</span> zu
                   <span className="block mt-2">Ihrem</span>
@@ -55,27 +55,52 @@ export default function HeroInput() {
                   Sparen Sie sich den Vor-Ort-Termin und erstellen Sie Ihren amtlich anerkannten Energieausweis komplett online. Starten Sie jetzt mit Ihrer kostenlosen Proberechnung oder werfen Sie einen Blick in unser Erklärvideo, beides lohnt sich.
                 </p>
 
-                {/* Video Button */}
-                <button
-                  onClick={() => setIsVideoOpen(true)}
-                  className="flex items-center gap-3 px-6 py-3 bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 group"
-                >
-                  <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                {/* Video Button - zentriert auf Mobile */}
+                <div className="space-y-8 md:space-y-0 flex flex-col items-center lg:items-start">
+                  <button
+                    onClick={() => setIsVideoOpen(true)}
+                    className="flex items-center gap-3 px-6 py-3 bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 group"
+                  >
+                    <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                      <svg 
+                        className="w-6 h-6 text-green-600 transform group-hover:scale-110 transition-transform" 
+                        fill="currentColor" 
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M8 5v14l11-7z"/>
+                      </svg>
+                    </div>
+                    <span className="font-medium">Erklärvideo ansehen</span>
+                  </button>
+
+                  {/* Statischer Pfeil mit modernerem Design */}
+                  <div className="flex justify-center w-full lg:hidden mt-8">
                     <svg 
-                      className="w-6 h-6 text-green-600 transform group-hover:scale-110 transition-transform" 
-                      fill="currentColor" 
-                      viewBox="0 0 24 24"
+                      className="w-12 h-12 text-green-600" 
+                      viewBox="0 0 24 24" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="1.5"
                     >
-                      <path d="M8 5v14l11-7z"/>
+                      <path 
+                        d="M12 6v12m0 0l-4-4m4 4l4-4" 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round"
+                      />
+                      <path 
+                        d="M12 6v12" 
+                        strokeLinecap="round" 
+                        strokeDasharray="1 3"
+                        className="opacity-30"
+                      />
                     </svg>
                   </div>
-                  <span className="font-medium">Erklärvideo ansehen</span>
-                </button>
+                </div>
               </div>
             </motion.div>
 
             {/* Right Column - Form */}
-            <div className="mx-[10%] relative z-10">
+            <div className="w-full lg:mx-[10%] relative z-10">
               <AddressForm isHeroVariant={true} />
             </div>
           </div>
