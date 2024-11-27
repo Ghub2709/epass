@@ -104,10 +104,9 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
 
           autocomplete.addListener('place_changed', () => {
             const place = autocomplete.getPlace();
-            if (place?.formatted_address) {
-              setFormData(prev => ({ ...prev, address: place.formatted_address }));
-              setIsAddressValidated(true);
-            }
+            const formattedAddress = place?.formatted_address || '';
+            setFormData(prev => ({ ...prev, address: formattedAddress }));
+            setIsAddressValidated(true);
           });
         } catch (error) {
           console.error('Error initializing Google Places Autocomplete:', error);
