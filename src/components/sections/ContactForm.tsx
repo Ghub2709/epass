@@ -1,9 +1,9 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, useAnimationControls } from 'framer-motion'
 
 export default function ContactForm() {
-  const [formStep, setFormStep] = useState<'initial' | 'loading' | 'email'>('initial')
+  const [formStep, setFormStep] = useState<'initial' | 'loading' | 'email' | 'addressConfirmation'>('initial')
   const [formData, setFormData] = useState({
     address: '',
     buildingYear: '',
@@ -17,6 +17,8 @@ export default function ContactForm() {
   const [orderCount, setOrderCount] = useState(23);
   const controls = useAnimationControls()
   const [isInteracting, setIsInteracting] = useState(false)
+  const addressInputRef = useRef<HTMLInputElement | null>(null);
+  const [isAddressValidated, setIsAddressValidated] = useState(false);
 
   useEffect(() => {
     if (!isInteracting && formStep === 'initial') {
@@ -79,11 +81,78 @@ export default function ContactForm() {
     }
   }, [formStep]);
 
+  // Initialize Google Places Autocomplete on input focus
+  useEffect(() => {
+    const handleFocus = () => {
+      if (!window.google) {
+        console.error('Google Maps API not loaded');
+        return;
+      }
+
+      if (addressInputRef.current) {
+        try {
+          const autocomplete = new google.maps.places.Autocomplete(addressInputRef.current, {
+            types: ['address'],
+            componentRestrictions: { country: 'de' },
+            fields: ['formatted_address', 'address_components'],
+          });
+
+          // Reset validation when user starts typing
+          addressInputRef.current.addEventListener('input', () => {
+            setIsAddressValidated(false);
+          });
+
+          autocomplete.addListener('place_changed', () => {
+            const place = autocomplete.getPlace();
+            if (place?.formatted_address) {
+              const address: string = place.formatted_address;
+              setFormData(prev => ({ ...prev, address }));
+              setIsAddressValidated(true);
+            }
+          });
+        } catch (error) {
+          console.error('Error initializing Google Places Autocomplete:', error);
+        }
+      }
+    };
+
+    const inputElement = addressInputRef.current;
+    if (inputElement) {
+      inputElement.addEventListener('focus', handleFocus);
+    }
+
+    return () => {
+      if (inputElement) {
+        inputElement.removeEventListener('focus', handleFocus);
+      }
+    };
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setFormStep('loading')
-    setTimeout(() => setFormStep('email'), 5000)
-  }
+    e.preventDefault();
+    
+    if (!isAddressValidated) {
+      alert('Bitte wählen Sie eine Adresse aus den Vorschlägen aus.');
+      addressInputRef.current?.focus();
+      return;
+    }
+
+    // Extrahiere den Straßenteil (alles vor dem ersten Komma)
+    const streetPart = formData.address.split(',')[0];
+    
+    // Prüfe nur den Straßenteil auf Hausnummer
+    const hasHouseNumber = /\s+\d+(-?\d*)?[a-zA-Z]?\s*$/.test(streetPart);
+
+    if (!hasHouseNumber) {
+      alert('Bitte ergänzen Sie die Hausnummer Ihres Objektes. Danke!');
+      addressInputRef.current?.focus();
+      setIsAddressValidated(false);
+      return;
+    }
+
+    setFormStep('loading');
+    setTimeout(() => setFormStep('email'), 5000);
+  };
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -221,17 +290,27 @@ export default function ContactForm() {
               <input
                 type="text"
                 required
-                className="block w-full px-4 py-3 rounded-xl border-2 border-gray-200 
+                ref={addressInputRef}
+                className={`block w-full px-4 py-3 rounded-xl border-2 
+                  ${isAddressValidated ? 'border-green-500' : 'border-gray-200'}
                   focus:ring-2 focus:ring-green-500 focus:border-transparent
                   transition-all duration-300 
                   hover:border-green-300 hover:shadow-lg
                   group-hover:translate-y-[-2px]
-                  relative z-20"
+                  relative z-20`}
                 placeholder="Straße, Hausnummer, PLZ, Ort"
                 value={formData.address}
-                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                onChange={(e) => {
+                  setFormData({ ...formData, address: e.target.value });
+                  setIsAddressValidated(false); // Reset validation on manual input
+                }}
               />
               <div className="absolute inset-0 bg-green-50 opacity-0 group-hover:opacity-10 rounded-xl transition-opacity duration-300 z-10" />
+              {!isAddressValidated && formData.address && (
+                <div className="text-sm text-amber-600 mt-1">
+                  Zur Absicherung der Adressqualität, wählen Sie bitte einen Vorschlag aus der Liste. Danke!
+                </div>
+              )}
             </div>
 
             <div className="relative group z-10">
