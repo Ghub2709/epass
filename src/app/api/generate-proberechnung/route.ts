@@ -62,7 +62,10 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Error in API route:', error);
     return NextResponse.json(
-      { error: 'Failed to generate Proberechnung', details: error.message },
+      { 
+        error: 'Failed to generate Proberechnung', 
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }
