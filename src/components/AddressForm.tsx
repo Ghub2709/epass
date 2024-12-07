@@ -277,10 +277,45 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
       link.click();
       document.body.removeChild(link);
 
-      alert('Ihre Proberechnung wurde erfolgreich erstellt!');
+      // Nach der PNG-Generierung:
+      if (formData.contactMethod === 'email') {
+        // Per E-Mail senden
+        const formDataToSend = new FormData();
+        const blob = await (await fetch(dataUrl)).blob();
+        formDataToSend.append('email', formData.email);
+        formDataToSend.append('proberechnung', blob, 'proberechnung.png');
+
+        const response = await fetch('/api/send-email', {
+          method: 'POST',
+          body: formDataToSend,
+        });
+
+        if (!response.ok) throw new Error('Failed to send email');
+
+        alert('Ihre Proberechnung wurde erfolgreich per E-Mail versendet!');
+      } else {
+        // Per WhatsApp senden
+        // WhatsApp Business API Message Template
+        const whatsappMessage = encodeURIComponent(
+          `Ihre Proberechnung für den Energieausweis ist fertig! 🎉\n\n` +
+          `Hier ist Ihr persönliches Angebot für:\n` +
+          `${formattedAddress}\n` +
+          `Baujahr: ${formData.buildingYear}\n\n` +
+          `Jetzt direkt bestellen: ${getPaymentLink(formData.buildingType)}`
+        );
+
+        // WhatsApp Link mit vorformulierter Nachricht
+        const whatsappLink = `https://wa.me/${formData.phone.replace(/\D/g, '')}?text=${whatsappMessage}`;
+        
+        // Öffne WhatsApp in neuem Tab
+        window.open(whatsappLink, '_blank');
+
+        alert('Ihre Proberechnung wurde an WhatsApp weitergeleitet!');
+      }
+
     } catch (error) {
-      console.error('Error generating Proberechnung:', error);
-      alert('Es gab einen Fehler bei der Erstellung der Proberechnung. Bitte versuchen Sie es später erneut.');
+      console.error('Error handling submission:', error);
+      alert('Es gab einen Fehler bei der Verarbeitung. Bitte versuchen Sie es später erneut.');
     }
   };
 
