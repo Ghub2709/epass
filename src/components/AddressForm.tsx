@@ -1,7 +1,6 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import { motion, useAnimationControls } from 'framer-motion'
-import { createCustomizedProberechnung } from '@/lib/imageProcessor';
 
 interface AddressFormProps {
   className?: string;
