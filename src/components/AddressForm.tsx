@@ -1,11 +1,20 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import { motion, useAnimationControls } from 'framer-motion'
+import { createCustomizedProberechnung } from '@/lib/imageProcessor';
 
 interface AddressFormProps {
   className?: string;
   isHeroVariant?: boolean;
 }
+
+// Payment Links als Konstanten definieren
+const PAYMENT_LINKS = {
+  house: "https://buy.stripe.com/6oE4iIdtrfFC7Ty288?locale=de",
+  apartment4: "https://buy.stripe.com/fZeg1qgFDdxu0r6289?locale=de",
+  apartment5: "https://buy.stripe.com/8wM16w753bpmb5K4gi?locale=de",
+  commercial: "https://buy.stripe.com/5kA7uUexv8da8XCfZ1?locale=de"
+};
 
 export default function AddressForm({ className = "", isHeroVariant = false }: AddressFormProps) {
   const [formStep, setFormStep] = useState<'initial' | 'loading' | 'email'>('initial')
@@ -152,10 +161,129 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
     setTimeout(() => setFormStep('email'), 5000);
   }
 
+  // Adresse formatieren
+  const formatAddress = (fullAddress: string) => {
+    // Extrahiere den Straßenteil und die Stadt
+    const parts = fullAddress.split(',');
+    const street = parts[0].trim();  // z.B. "Quelkhorner Straße 37"
+    const city = parts[1]?.trim().split(' ').pop() || '';  // Nimmt nur den Stadtnamen, z.B. "Bremen"
+    
+    return city ? `${street} in ${city}` : street;
+  };
+
+  // Formatiere den Dateinamen
+  const formatFileName = (address: string) => {
+    // Extrahiere Straße und Stadt
+    const parts = address.split(',');
+    const street = parts[0].trim();
+    const city = parts[1]?.trim().split(' ').pop() || '';  // Nimmt nur den Stadtnamen
+
+    // Bereinige die Strings
+    const cleanStreet = street
+      .replace(/[^\w\säöüÄÖÜß-]/g, '')  // Entferne Sonderzeichen außer Umlaute
+      .trim();
+    const cleanCity = city
+      .replace(/[^\w\säöüÄÖÜß-]/g, '')
+      .trim();
+
+    return `Ihre kostenlose Proberechnung - ${cleanStreet} in ${cleanCity} - vom Premium Energiepass Online.png`;
+  };
+
   const handleEmailSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log('Form data:', formData)
-  }
+    e.preventDefault();
+    
+    try {
+      // Template basierend auf Baujahr auswählen
+      const year = parseInt(formData.buildingYear);
+      let templateName = '';
+      
+      if (year <= 1959) {
+        templateName = '1900-1959.png';
+      } else if (year >= 1960 && year <= 1975) {
+        templateName = '1960-1975.png';
+      } else if (year >= 1976 && year <= 1990) {
+        templateName = '1976-1990.png';
+      } else {
+        templateName = '1991-2024.png';
+      }
+
+      // Canvas erstellen
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('Could not get canvas context');
+
+      // Bild laden
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.src = `/images/templates/${templateName}`;
+      
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+      });
+
+      // Canvas Größe setzen
+      canvas.width = img.width;
+      canvas.height = img.height;
+
+      // Bild zeichnen
+      ctx.drawImage(img, 0, 0);
+
+      // Text Style setzen
+      ctx.font = 'bold 24px Arial';
+      ctx.fillStyle = '#333333';
+
+      // Text hinzufügen
+      const buildingTypeText = formData.buildingType === 'house' ? 'Einfamilienhaus' : 
+                             formData.buildingType === 'apartment4' ? 'Mehrfamilienhaus bis 4 Wohneinheiten' :
+                             formData.buildingType === 'apartment5' ? 'Mehrfamilienhaus über 4 Wohneinheiten' :
+                             'Nichtwohngebäude (NWG)';
+
+      ctx.fillText(buildingTypeText, 140, 870);
+      const formattedAddress = formatAddress(formData.address);
+      ctx.fillText(formattedAddress, 140, 920);
+      ctx.fillText(`Baujahr ${formData.buildingYear}`, 140, 970);
+
+      // QR Code generieren und zeichnen
+      const qr = await import('qrcode');
+      const paymentLink = getPaymentLink(formData.buildingType);
+      const params = new URLSearchParams({
+        address: formData.address,
+        type: formData.buildingType,
+        year: formData.buildingYear
+      });
+      
+      const qrDataUrl = await qr.toDataURL(`${paymentLink}&${params.toString()}`, {
+        width: 150,
+        margin: 1,
+        color: {
+          dark: '#000000',
+          light: '#ffffff'
+        }
+      });
+
+      const qrImg = new Image();
+      qrImg.src = qrDataUrl;
+      await new Promise((resolve) => {
+        qrImg.onload = resolve;
+      });
+      ctx.drawImage(qrImg, canvas.width - 483, canvas.height - 317, 187, 187);
+
+      // Download auslösen
+      const dataUrl = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.download = formatFileName(formData.address);
+      link.href = dataUrl;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      alert('Ihre Proberechnung wurde erfolgreich erstellt!');
+    } catch (error) {
+      console.error('Error generating Proberechnung:', error);
+      alert('Es gab einen Fehler bei der Erstellung der Proberechnung. Bitte versuchen Sie es später erneut.');
+    }
+  };
 
   const renderFormContent = () => {
     if (formStep === 'loading') {
@@ -226,7 +354,7 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
               </button>
             </div>
           ) : (
-            <form onSubmit={handleEmailSubmit} className="space-y-6">
+            <div className="space-y-6">
               <div className="relative group">
                 {formData.contactMethod === 'email' ? (
                   <input
@@ -251,7 +379,7 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
               </div>
 
               <button
-                type="submit"
+                onClick={handleEmailSubmit}
                 className="w-full flex items-center justify-center px-8 py-4 border border-transparent text-base font-medium rounded-xl text-white bg-green-600 hover:bg-green-700 transition-colors group"
               >
                 <span>Ja! Unterlagen {formData.contactMethod === 'email' ? 'per E-Mail' : 'per WhatsApp'} zusenden</span>
@@ -272,7 +400,7 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
               >
                 ← Andere Kontaktmethode wählen
               </button>
-            </form>
+            </div>
           )}
         </div>
       )
@@ -340,8 +468,9 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
               onChange={(e) => setFormData({ ...formData, buildingType: e.target.value })}
             >
               <option value="house">Einfamilienhaus</option>
-              <option value="apartment">Mehrfamilienhaus</option>
-              <option value="commercial">Gewerbeimmobilie</option>
+              <option value="apartment4">Mehrfamilienhaus bis 4 Wohneinheiten</option>
+              <option value="apartment5">Mehrfamilienhaus über 4 Wohneinheiten</option>
+              <option value="commercial">Nichtwohngebäude (NWG)</option>
             </select>
             <div className="absolute inset-0 bg-green-50 opacity-0 group-hover:opacity-10 rounded-xl transition-opacity duration-300 z-10" />
             <div className="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none
@@ -391,6 +520,10 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
     '/images/avatars/avatar6.jpeg',
     '/images/avatars/avatar7.jpeg'
   ];
+
+  const getPaymentLink = (buildingType: string) => {
+    return PAYMENT_LINKS[buildingType as keyof typeof PAYMENT_LINKS];
+  };
 
   return (
     <div className={className}>

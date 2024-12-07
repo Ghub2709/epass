@@ -7,7 +7,7 @@ export default function HeroInput() {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
 
   return (
-    <section className="relative bg-gradient-to-b from-green-50 via-white to-white min-h-[80vh] flex items-center">
+    <section id="hero-input" className="relative bg-gradient-to-b from-green-50 via-white to-white min-h-[80vh] flex items-center">
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-12 items-center">

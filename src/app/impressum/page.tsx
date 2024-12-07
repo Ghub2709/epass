@@ -105,14 +105,6 @@ export default function ImpressumPage() {
                       <h3 className="font-semibold text-lg mb-2">Geschäftsführung</h3>
                       <p className="text-gray-600">Stephan Grosser</p>
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-lg mb-2">Registereintrag</h3>
-                      <p className="text-gray-600">
-                        Amtsgericht Bremen<br />
-                        Handelsregister: HRB XXXXX<br />
-                        USt-IdNr.: DE XXX XXX XXX
-                      </p>
-                    </div>
                   </div>
                 </div>
 

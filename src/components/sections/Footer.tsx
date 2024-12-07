@@ -1,6 +1,10 @@
 'use client'
 
+import { useState } from 'react'
+
 export default function Footer() {
+  const [isVideoOpen, setIsVideoOpen] = useState(false);
+
   return (
     <footer className="bg-gray-900 text-gray-300 py-16">
       {/* Logo und Kontaktinformationen */}
@@ -48,10 +52,15 @@ export default function Footer() {
                 Unternehmen
               </h3>
               <div className="flex flex-col space-y-2">
-                <a href="#" className="hover:text-white transition-colors">Über uns</a>
-                <a href="#" className="hover:text-white transition-colors">Team</a>
-                <a href="#" className="hover:text-white transition-colors">Karriere</a>
-                <a href="#" className="hover:text-white transition-colors">Partner werden</a>
+                <button 
+                  onClick={() => setIsVideoOpen(true)} 
+                  className="text-left hover:text-white transition-colors"
+                >
+                  Über uns
+                </button>
+                <a href="#process-section" className="hover:text-white transition-colors">Team</a>
+                <a href="#contact-section" className="hover:text-white transition-colors">Karriere</a>
+                <a href="#contact-section" className="hover:text-white transition-colors">Partner werden</a>
               </div>
             </div>
 
@@ -61,10 +70,10 @@ export default function Footer() {
                 Service
               </h3>
               <div className="flex flex-col space-y-2">
-                <a href="#" className="hover:text-white transition-colors">Energieausweis beantragen</a>
-                <a href="#" className="hover:text-white transition-colors">Preise & Leistungen</a>
-                <a href="#" className="hover:text-white transition-colors">Häufige Fragen</a>
-                <a href="#" className="hover:text-white transition-colors">Kontakt</a>
+                <a href="#hero-input" className="hover:text-white transition-colors">Energieausweis beantragen</a>
+                <a href="#pricing-section" className="hover:text-white transition-colors">Preise & Leistungen</a>
+                <a href="#faq-section" className="hover:text-white transition-colors">Häufige Fragen</a>
+                <a href="#contact-section" className="hover:text-white transition-colors">Kontakt</a>
               </div>
             </div>
 
@@ -74,11 +83,11 @@ export default function Footer() {
                 Rechtliches
               </h3>
               <div className="flex flex-col space-y-2">
-                <a href="#" className="hover:text-white transition-colors">Impressum</a>
-                <a href="#" className="hover:text-white transition-colors">Datenschutzerklärung</a>
-                <a href="#" className="hover:text-white transition-colors">AGB</a>
-                <a href="#" className="hover:text-white transition-colors">Widerrufsbelehrung</a>
-                <a href="#" className="hover:text-white transition-colors">Cookie-Einstellungen</a>
+                <a href="/impressum" className="hover:text-white transition-colors">Impressum</a>
+                <a href="/datenschutz" className="hover:text-white transition-colors">Datenschutzerklärung</a>
+                <a href="/agb" className="hover:text-white transition-colors">AGB</a>
+                <a href="/widerruf" className="hover:text-white transition-colors">Widerrufsbelehrung</a>
+                <a href="/cookie-einstellungen" className="hover:text-white transition-colors">Cookie-Einstellungen</a>
               </div>
             </div>
           </div>
@@ -91,6 +100,45 @@ export default function Footer() {
           © 2024 Premium Energiepass® Online. Alle Rechte vorbehalten.
         </div>
       </div>
+
+      {/* Video Modal */}
+      {isVideoOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4"
+          onClick={() => setIsVideoOpen(false)}
+        >
+          <div 
+            className="relative w-full max-w-[540px] bg-black rounded-xl overflow-hidden"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <button
+              onClick={() => setIsVideoOpen(false)}
+              className="absolute top-4 right-4 text-white hover:text-gray-300 z-10 bg-black bg-opacity-50 rounded-full p-2"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            {/* Video Container mit 9:16 Aspect Ratio */}
+            <div className="relative pt-[177.78%]">
+              <video
+                className="absolute inset-0 w-full h-full object-contain bg-black"
+                controls
+                autoPlay
+                playsInline
+                muted={false}
+                preload="auto"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <source src="/videos/StephanGrosser.mp4" type="video/mp4" />
+                Ihr Browser unterstützt keine Videos.
+              </video>
+            </div>
+          </div>
+        </div>
+      )}
     </footer>
   )
 } 

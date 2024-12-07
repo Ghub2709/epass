@@ -11,56 +11,62 @@ export default function Pricing() {
       originalPrice: "497 €",
       currentPrice: "297 €",
       features: [
-        "Verbrauchsausweis",
+        "Bedarfsausweis",
         "Registrierung beim DIBt",
-        "24h Express-Service",
+        "In 24 Std. bei Ihnen",
         "Rechtssicher & anerkannt"
       ],
       suffix: "inkl. MwSt.",
       popular: true,
-      gradient: "from-green-400 to-primary-600"
+      gradient: "from-green-400 to-primary-600",
+      paymentLink: "https://buy.stripe.com/6oE4iIdtrfFC7Ty288?locale=de"
     },
     {
       title: "Mehrfamilienhaus bis 4 Wohneinheiten",
       originalPrice: "897 €",
       currentPrice: "497 €",
       features: [
-        "Verbrauchsausweis",
+        "Bester Bedarfsausweis",
         "Registrierung beim DIBt",
         "24h Express-Service",
         "Für bis zu 4 Wohneinheiten"
       ],
       suffix: "Paketpreis inkl. MwSt.",
-      gradient: "from-blue-400 to-blue-600"
-    },
-    {
-      title: "Nichtwohngebäude (NWG)",
-      currentPrice: "ab 997 €",
-      features: [
-        "Individuelle Beratung",
-        "Maßgeschneiderte Lösung",
-        "Express-Service möglich",
-        "Komplette Abwicklung"
-      ],
-      prefix: "€",
-      gradient: "from-purple-400 to-purple-600"
+      gradient: "from-blue-400 to-blue-600",
+      paymentLink: "https://buy.stripe.com/fZeg1qgFDdxu0r6289?locale=de"
     },
     {
       title: "Mehrfamilienhaus über 4 Wohneinheiten",
-      currentPrice: "ab 997 €",
+      originalPrice: "1.497 €",
+      currentPrice: "997 €",
       features: [
         "Individuelle Beratung",
         "Maßgeschneiderte Lösung",
-        "Express-Service möglich",
-        "Preis nach Vereinbarung"
+        "Express-Service 24 Stunden",
+        "Festpreis Bedarfsausweis"
       ],
-      prefix: "€",
-      gradient: "from-orange-400 to-red-600"
+      prefix: "",
+      gradient: "from-orange-400 to-red-600",
+      paymentLink: "https://buy.stripe.com/8wM16w753bpmb5K4gi?locale=de"
+    },
+    {
+      title: "Nichtwohngebäude (NWG)",
+      originalPrice: "1.997 €",
+      currentPrice: "997 €",
+      features: [
+        "Alles aus einer Hand",
+        "Maßgeschneiderte Lösung",
+        "Express-Service inklusive",
+        "Bestpreisgarantie"
+      ],
+      prefix: "",
+      gradient: "from-purple-400 to-purple-600",
+      paymentLink: "https://buy.stripe.com/5kA7uUexv8da8XCfZ1?locale=de"
     }
   ]
 
   return (
-    <section className="py-20 bg-gray-50 relative overflow-hidden">
+    <section id="pricing-section" className="py-20 bg-gray-50 relative overflow-hidden">
       <div className="container mx-auto px-4">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
@@ -130,13 +136,16 @@ export default function Pricing() {
                       </motion.li>
                     ))}
                   </ul>
-                  <motion.button 
+                  <motion.a 
+                    href={price.paymentLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     whileHover={{ y: -4 }}
                     whileTap={{ y: 0 }}
-                    className={`w-full py-4 rounded-xl font-semibold text-white bg-gradient-to-r ${price.gradient} transition-all duration-300 hover:shadow-lg`}
+                    className={`w-full py-4 rounded-xl font-semibold text-white bg-gradient-to-r ${price.gradient} transition-all duration-300 hover:shadow-lg text-center block`}
                   >
                     Jetzt bestellen
-                  </motion.button>
+                  </motion.a>
                 </div>
               </div>
             </motion.div>
@@ -149,8 +158,8 @@ export default function Pricing() {
           viewport={{ once: true }}
           className="text-center mt-12 text-gray-600"
         >
-          <p>Alle Preise verstehen sich inklusive der gesetzlichen Mehrwertsteuer</p>
-          <p className="mt-2">Kostenlose Stornierung vor Bearbeitung möglich</p>
+          <p>Alle Preise verstehen sich inklusive der gesetzlichen Mehrwertsteuer.</p>
+          <p className="mt-2">Kostenlose Stornierung vor Bearbeitung möglich.</p>
         </motion.div>
       </div>
     </section>
