@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 
 export default function Footer() {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
@@ -10,9 +11,11 @@ export default function Footer() {
       {/* Logo und Kontaktinformationen */}
       <div className="container mx-auto px-4 mb-32">
         <div className="max-w-7xl mx-auto">
-          <img 
+          <Image 
             src="/images/logo-white.svg" 
             alt="Premium Energiepass Online" 
+            width={280}
+            height={80}
             className="w-[80%] md:w-[35%] lg:w-[28%] mx-auto md:mx-0 mb-8"
           />
           

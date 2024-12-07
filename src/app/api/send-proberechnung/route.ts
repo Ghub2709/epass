@@ -7,6 +7,9 @@ export async function POST(request: Request) {
     const email = formData.get('email') as string;
     const proberechnung = formData.get('proberechnung') as Blob;
 
+    // Konvertiere ArrayBuffer zu Buffer
+    const buffer = Buffer.from(await proberechnung.arrayBuffer());
+
     // Email-Versand konfigurieren
     const transporter = nodemailer.createTransport({
       // Email-Server Konfiguration
@@ -21,7 +24,7 @@ export async function POST(request: Request) {
       attachments: [
         {
           filename: 'proberechnung.png',
-          content: await proberechnung.arrayBuffer()
+          content: buffer
         }
       ]
     });
