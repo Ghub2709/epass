@@ -18,6 +18,50 @@ const PAYMENT_LINKS = {
   commercial: "https://buy.stripe.com/5kA7uUexv8da8XCfZ1?locale=de"
 };
 
+// Hilfsfunktion für Payment Links - VOR sendAdminNotification definieren
+const getPaymentLink = (buildingType: string) => {
+  return PAYMENT_LINKS[buildingType as keyof typeof PAYMENT_LINKS];
+};
+
+// EmailJS einmalig initialisieren
+emailjs.init(process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!);
+
+// Hilfsfunktion für Admin-Benachrichtigungen
+const sendAdminNotification = async (
+  action: 'email' | 'download',
+  formData: {
+    address: string,
+    buildingType: string,
+    buildingYear: string,
+    email?: string
+  },
+  buildingTypeText: string
+) => {
+  try {
+    const adminTemplateParams = {
+      to_email: 'info@premium-energiepass.online',
+      action_type: action === 'email' ? 'E-Mail Versand' : 'Direkter Download',
+      address: formData.address,
+      building_type: buildingTypeText,
+      building_year: formData.buildingYear,
+      user_email: formData.email || 'Direkter Download - keine E-Mail angegeben',
+      timestamp: new Date().toLocaleString('de-DE'),
+      payment_link: getPaymentLink(formData.buildingType)
+    };
+
+    console.log('Sending admin notification with template:', process.env.NEXT_PUBLIC_EMAILJS_ADMIN_TEMPLATE_ID);
+    console.log('Admin template params:', adminTemplateParams);
+
+    await emailjs.send(
+      process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
+      process.env.NEXT_PUBLIC_EMAILJS_ADMIN_TEMPLATE_ID!,
+      adminTemplateParams
+    );
+  } catch (error) {
+    console.error('Admin notification failed:', error);
+  }
+};
+
 export default function AddressForm({ className = "", isHeroVariant = false }: AddressFormProps) {
   const [formStep, setFormStep] = useState<'initial' | 'loading' | 'email'>('initial')
   const [formData, setFormData] = useState({
@@ -357,6 +401,7 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
         if (response.status === 200) {
           // PDF generieren und herunterladen
           generatePDF(dataUrl, fullUrl, formData.address);
+          await sendAdminNotification('email', formData, buildingTypeText);
 
           // Benachrichtigung
           const notification = document.createElement('div');
@@ -374,6 +419,7 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
       } else {
         // PDF generieren und herunterladen
         generatePDF(dataUrl, fullUrl, formData.address);
+        await sendAdminNotification('download', formData, buildingTypeText);
 
         // Benachrichtigung
         const notification = document.createElement('div');
@@ -386,33 +432,6 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
           setTimeout(() => document.body.removeChild(notification), 500);
         }, 3000);
       }
-
-      // EmailJS initialisieren
-      emailjs.init(process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!);
-      
-      const adminTemplateParams = {
-        to_email: 'info@premium-energiepass.online',
-        action_type: 'Direkter Download',
-        address: formData.address,
-        building_type: buildingTypeText,
-        building_year: formData.buildingYear,
-        user_email: 'Direkter Download - keine E-Mail angegeben',
-        timestamp: new Date().toLocaleString('de-DE'),
-        payment_link: getPaymentLink(formData.buildingType)
-      };
-
-      // Explizit prüfen ob die Template ID vorhanden ist
-      const adminTemplateId = process.env.NEXT_PUBLIC_EMAILJS_ADMIN_TEMPLATE_ID;
-      if (!adminTemplateId) {
-        console.error('Admin template ID is not defined');
-        return;
-      }
-
-      await emailjs.send(
-        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
-        adminTemplateId,
-        adminTemplateParams
-      );
     } catch (error) {
       alert('Es gab einen Fehler. Bitte versuchen Sie es später erneut.');
     }
@@ -573,6 +592,9 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
 
                     // PDF generieren und herunterladen
                     generatePDF(dataUrl, fullUrl, formData.address);
+
+                    // Admin-Benachrichtigung für Download
+                    await sendAdminNotification('download', formData, buildingTypeText);
 
                     // Benachrichtigung
                     const notification = document.createElement('div');
@@ -778,10 +800,6 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
     '/images/avatars/avatar6.jpeg',
     '/images/avatars/avatar7.jpeg'
   ];
-
-  const getPaymentLink = (buildingType: string) => {
-    return PAYMENT_LINKS[buildingType as keyof typeof PAYMENT_LINKS];
-  };
 
   const handleInteractionStart = () => {
     setIsInteracting(true);
