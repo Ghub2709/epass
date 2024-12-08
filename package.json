@@ -13,10 +13,12 @@
     "@react-google-maps/api": "^2.20.3",
     "@types/nodemailer": "^6.4.17",
     "dotenv": "^16.4.5",
+    "formidable": "^3.5.2",
     "framer-motion": "^10.18.0",
     "googleapis": "^144.0.0",
     "gray-matter": "^4.0.3",
     "html2canvas": "^1.4.1",
+    "jspdf": "^2.5.2",
     "next": "14.0.3",
     "nodemailer": "^6.9.16",
     "qrcode": "^1.5.4",
@@ -25,11 +27,13 @@
     "react-dom": "^18.3.1",
     "remark": "^15.0.1",
     "remark-html": "^16.0.1",
-    "resend": "^4.0.1"
+    "resend": "^4.0.1",
+    "twilio": "^5.3.7"
   },
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.9",
     "@tailwindcss/typography": "^0.5.15",
+    "@types/formidable": "^3.4.5",
     "@types/next": "^8.0.7",
     "@types/node": "^20",
     "@types/qrcode": "^1.5.5",
