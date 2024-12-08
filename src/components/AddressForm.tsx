@@ -18,65 +18,13 @@ const PAYMENT_LINKS = {
   commercial: "https://buy.stripe.com/5kA7uUexv8da8XCfZ1?locale=de"
 };
 
-// Hilfsfunktion für Payment Links
-const getPaymentLinkHelper = (buildingType: keyof typeof PAYMENT_LINKS) => {
-  return PAYMENT_LINKS[buildingType];
-};
-
-// Neue Hilfsfunktion für Admin-Benachrichtigungen
-const sendAdminNotification = async (
-  action: 'email' | 'download',
-  formData: {
-    address: string,
-    buildingYear: string,
-    buildingType: string,
-    email?: string
-  }
-) => {
-  const buildingTypeText = formData.buildingType === 'house' ? 'Einfamilienhaus' : 
-                          formData.buildingType === 'apartment4' ? 'Mehrfamilienhaus bis 4 Wohneinheiten' :
-                          formData.buildingType === 'apartment5' ? 'Mehrfamilienhaus über 4 Wohneinheiten' :
-                          'Nichtwohngebäude (NWG)';
-
-  const templateParams = {
-    to_email: 'info@premium-energiepass.online',
-    action_type: action === 'email' ? 'E-Mail Versand' : 'Direkter Download',
-    address: formData.address,
-    building_type: buildingTypeText,
-    building_year: formData.buildingYear,
-    user_email: formData.email || 'Nicht angegeben',
-    timestamp: new Date().toLocaleString('de-DE'),
-    payment_link: getPaymentLinkHelper(formData.buildingType as keyof typeof PAYMENT_LINKS)
-  };
-
-  try {
-    await emailjs.send(
-      process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
-      process.env.NEXT_PUBLIC_EMAILJS_ADMIN_TEMPLATE_ID!,
-      templateParams,
-      process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!
-    );
-  } catch (error) {
-    console.error('Admin notification failed:', error);
-  }
-};
-
-interface FormData {
-  address: string;
-  buildingYear: string;
-  buildingType: keyof typeof PAYMENT_LINKS;
-  contactMethod: string;
-  email: string;
-  phone: string;
-}
-
 export default function AddressForm({ className = "", isHeroVariant = false }: AddressFormProps) {
   const [formStep, setFormStep] = useState<'initial' | 'loading' | 'email'>('initial')
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState({
     address: '',
     buildingYear: '',
     buildingType: 'house',
-    contactMethod: '',
+    contactMethod: '', // 'email' oder 'whatsapp'
     email: '',
     phone: ''
   })
@@ -308,7 +256,7 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
       }
 
       // Payment Link und QR Code generieren
-      const paymentLink = getPaymentLinkHelper(formData.buildingType);
+      const paymentLink = getPaymentLink(formData.buildingType);
       const params = new URLSearchParams({
         address: formData.address,
         type: formData.buildingType,
@@ -389,99 +337,43 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
       const dataUrl = canvas.toDataURL('image/png');
 
       if (formData.contactMethod === 'email') {
+        // EmailJS Template Parameter
         const templateParams = {
           to_email: formData.email,
-          from_name: "Premium Energiepass Online",
-          to_name: formData.email.split('@')[0],
           building_type: buildingTypeText,
           message: formattedAddress,
           building_year: formData.buildingYear,
-          payment_link: getPaymentLinkHelper(formData.buildingType)
+          payment_link: getPaymentLink(formData.buildingType)
         };
 
-        try {
-          // EmailJS initialisieren
-          emailjs.init(process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!);
-          
-          const response = await emailjs.send(
-            process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
-            process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!,
-            templateParams
-          );
+        // EmailJS senden
+        const response = await emailjs.send(
+          process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
+          process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!,
+          templateParams,
+          process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!
+        );
 
-          console.log('EmailJS Response:', response);
+        if (response.status === 200) {
+          // PDF generieren und herunterladen
+          generatePDF(dataUrl, fullUrl, formData.address);
 
-          if (response.status === 200) {
-            // PDF generieren und herunterladen
-            generatePDF(dataUrl, fullUrl, formData.address);
+          // Benachrichtigung
+          const notification = document.createElement('div');
+          notification.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-500 ease-in-out';
+          notification.textContent = 'Ihre Proberechnung wurde als PDF heruntergeladen und die E-Mail wurde versendet. Das PDF ist komplett klickbar!';
+          document.body.appendChild(notification);
 
-            // Admin-Benachrichtigung
-            const adminTemplateParams = {
-              to_email: 'info@premium-energiepass.online',
-              action_type: 'E-Mail Versand',
-              address: formData.address,
-              building_type: buildingTypeText,
-              building_year: formData.buildingYear,
-              user_email: formData.email,
-              timestamp: new Date().toLocaleString('de-DE'),
-              payment_link: getPaymentLinkHelper(formData.buildingType)
-            };
-
-            try {
-              await emailjs.send(
-                process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
-                process.env.NEXT_PUBLIC_EMAILJS_ADMIN_TEMPLATE_ID!,
-                adminTemplateParams
-              );
-            } catch (error) {
-              console.error('Admin notification failed:', error);
-              // Fehler hier nicht werfen, damit der Hauptprozess weiterlaufen kann
-            }
-
-            // Erfolgsmeldung hinzufügen
-            const notification = document.createElement('div');
-            notification.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-500 ease-in-out';
-            notification.textContent = 'Ihre Proberechnung wurde als PDF heruntergeladen und die E-Mail wurde versendet. Das PDF ist komplett klickbar!';
-            document.body.appendChild(notification);
-
-            setTimeout(() => {
-              notification.style.opacity = '0';
-              setTimeout(() => document.body.removeChild(notification), 500);
-            }, 3000);
-          }
-        } catch (error) {
-          console.error('EmailJS Error:', error);
-          throw error;
+          setTimeout(() => {
+            notification.style.opacity = '0';
+            setTimeout(() => document.body.removeChild(notification), 500);
+          }, 3000);
+        } else {
+          throw new Error('Failed to send email');
         }
       } else {
         // PDF generieren und herunterladen
         generatePDF(dataUrl, fullUrl, formData.address);
-        
-        // Admin-Benachrichtigung für Download
-        const adminTemplateParams = {
-          to_email: 'info@premium-energiepass.online',
-          action_type: 'Direkter Download',
-          address: formData.address,
-          building_type: buildingTypeText,
-          building_year: formData.buildingYear,
-          user_email: 'Direkter Download - keine E-Mail angegeben',
-          timestamp: new Date().toLocaleString('de-DE'),
-          payment_link: getPaymentLinkHelper(formData.buildingType)
-        };
-
-        try {
-          // EmailJS initialisieren
-          emailjs.init(process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!);
-          
-          await emailjs.send(
-            process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
-            process.env.NEXT_PUBLIC_EMAILJS_ADMIN_TEMPLATE_ID!,
-            adminTemplateParams
-          );
-        } catch (error) {
-          console.error('Admin notification failed:', error);
-          // Fehler hier nicht werfen, damit der Hauptprozess weiterlaufen kann
-        }
 
         // Benachrichtigung
         const notification = document.createElement('div');
@@ -494,6 +386,33 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
           setTimeout(() => document.body.removeChild(notification), 500);
         }, 3000);
       }
+
+      // EmailJS initialisieren
+      emailjs.init(process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!);
+      
+      const adminTemplateParams = {
+        to_email: 'info@premium-energiepass.online',
+        action_type: 'Direkter Download',
+        address: formData.address,
+        building_type: buildingTypeText,
+        building_year: formData.buildingYear,
+        user_email: 'Direkter Download - keine E-Mail angegeben',
+        timestamp: new Date().toLocaleString('de-DE'),
+        payment_link: getPaymentLink(formData.buildingType)
+      };
+
+      // Explizit prüfen ob die Template ID vorhanden ist
+      const adminTemplateId = process.env.NEXT_PUBLIC_EMAILJS_ADMIN_TEMPLATE_ID;
+      if (!adminTemplateId) {
+        console.error('Admin template ID is not defined');
+        return;
+      }
+
+      await emailjs.send(
+        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
+        adminTemplateId,
+        adminTemplateParams
+      );
     } catch (error) {
       alert('Es gab einen Fehler. Bitte versuchen Sie es später erneut.');
     }
@@ -572,7 +491,7 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
                     }
 
                     // Payment Link und QR Code generieren
-                    const paymentLink = getPaymentLinkHelper(formData.buildingType);
+                    const paymentLink = getPaymentLink(formData.buildingType);
                     const params = new URLSearchParams({
                       address: formData.address,
                       type: formData.buildingType,
@@ -654,31 +573,6 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
 
                     // PDF generieren und herunterladen
                     generatePDF(dataUrl, fullUrl, formData.address);
-
-                    // Admin-Benachrichtigung für Download
-                    try {
-                      // EmailJS initialisieren
-                      emailjs.init(process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!);
-                      
-                      const adminTemplateParams = {
-                        to_email: 'info@premium-energiepass.online',
-                        action_type: 'Direkter Download',
-                        address: formData.address,
-                        building_type: buildingTypeText,
-                        building_year: formData.buildingYear,
-                        user_email: 'Direkter Download - keine E-Mail angegeben',
-                        timestamp: new Date().toLocaleString('de-DE'),
-                        payment_link: getPaymentLinkHelper(formData.buildingType)
-                      };
-
-                      await emailjs.send(
-                        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
-                        process.env.NEXT_PUBLIC_EMAILJS_ADMIN_TEMPLATE_ID!,
-                        adminTemplateParams
-                      );
-                    } catch (error) {
-                      console.error('Admin notification failed:', error);
-                    }
 
                     // Benachrichtigung
                     const notification = document.createElement('div');
@@ -829,10 +723,7 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
                 appearance-none cursor-pointer
                 relative z-20"
               value={formData.buildingType}
-              onChange={(e) => setFormData({ 
-                ...formData, 
-                buildingType: e.target.value as keyof typeof PAYMENT_LINKS 
-              })}
+              onChange={(e) => setFormData({ ...formData, buildingType: e.target.value })}
             >
               <option value="house">Einfamilienhaus</option>
               <option value="apartment4">Mehrfamilienhaus bis 4 Wohneinheiten</option>
@@ -887,6 +778,10 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
     '/images/avatars/avatar6.jpeg',
     '/images/avatars/avatar7.jpeg'
   ];
+
+  const getPaymentLink = (buildingType: string) => {
+    return PAYMENT_LINKS[buildingType as keyof typeof PAYMENT_LINKS];
+  };
 
   const handleInteractionStart = () => {
     setIsInteracting(true);
