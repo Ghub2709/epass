@@ -65,6 +65,13 @@ export default function Pricing() {
     }
   ]
 
+  const scrollToForm = () => {
+    const formElement = document.getElementById('contact-form');
+    if (formElement) {
+      formElement.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <section id="pricing-section" className="py-20 bg-gray-50 relative overflow-hidden">
       <div className="container mx-auto px-4">
