@@ -1,6 +1,8 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import { motion, useAnimationControls } from 'framer-motion'
+import emailjs from '@emailjs/browser'
+import QRCode from 'qrcode'
 
 interface AddressFormProps {
   className?: string;
@@ -206,12 +208,29 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
         templateName = '1991-2024.png';
       }
 
-      // Canvas erstellen
+      // Payment Link und QR Code generieren
+      const paymentLink = getPaymentLink(formData.buildingType);
+      const params = new URLSearchParams({
+        address: formData.address,
+        type: formData.buildingType,
+        year: formData.buildingYear
+      });
+      const fullUrl = `${paymentLink}&${params.toString()}`;
+      
+      // QR Code generieren
+      const qrCodeDataUrl = await QRCode.toDataURL(fullUrl);
+      const qrCodeImage = new Image();
+      qrCodeImage.src = qrCodeDataUrl;
+      await new Promise((resolve) => {
+        qrCodeImage.onload = resolve;
+      });
+
+      // Canvas erstellen und Template laden
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       if (!ctx) throw new Error('Could not get canvas context');
 
-      // Bild laden
+      // Template laden
       const img = new Image();
       img.crossOrigin = "anonymous";
       img.src = `/images/templates/${templateName}`;
@@ -221,11 +240,9 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
         img.onerror = reject;
       });
 
-      // Canvas Größe setzen
+      // Canvas Größe setzen und Template zeichnen
       canvas.width = img.width;
       canvas.height = img.height;
-
-      // Bild zeichnen
       ctx.drawImage(img, 0, 0);
 
       // Text Style setzen
@@ -238,84 +255,52 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
                              formData.buildingType === 'apartment5' ? 'Mehrfamilienhaus über 4 Wohneinheiten' :
                              'Nichtwohngebäude (NWG)';
 
-      ctx.fillText(buildingTypeText, 140, 870);
       const formattedAddress = formatAddress(formData.address);
+      
+      ctx.fillText(buildingTypeText, 140, 870);
       ctx.fillText(formattedAddress, 140, 920);
       ctx.fillText(`Baujahr ${formData.buildingYear}`, 140, 970);
 
-      // QR Code generieren und zeichnen
-      const qr = await import('qrcode');
-      const paymentLink = getPaymentLink(formData.buildingType);
-      const params = new URLSearchParams({
-        address: formData.address,
-        type: formData.buildingType,
-        year: formData.buildingYear
-      });
-      
-      const qrDataUrl = await qr.toDataURL(`${paymentLink}&${params.toString()}`, {
-        width: 150,
-        margin: 1,
-        color: {
-          dark: '#000000',
-          light: '#ffffff'
-        }
-      });
+      // QR Code zeichnen
+      ctx.drawImage(qrCodeImage, canvas.width - 483, canvas.height - 317, 187, 187);
 
-      const qrImg = new Image();
-      qrImg.src = qrDataUrl;
-      await new Promise((resolve) => {
-        qrImg.onload = resolve;
-      });
-      ctx.drawImage(qrImg, canvas.width - 483, canvas.height - 317, 187, 187);
-
-      // Download auslösen
+      // PNG generieren
       const dataUrl = canvas.toDataURL('image/png');
-      const link = document.createElement('a');
-      link.download = formatFileName(formData.address);
-      link.href = dataUrl;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
 
-      // Nach der PNG-Generierung:
       if (formData.contactMethod === 'email') {
-        // Per E-Mail senden
-        const formDataToSend = new FormData();
-        const blob = await (await fetch(dataUrl)).blob();
-        formDataToSend.append('email', formData.email);
-        formDataToSend.append('proberechnung', blob, 'proberechnung.png');
+        // EmailJS Template Parameter
+        const templateParams = {
+          to_email: formData.email,
+          building_type: buildingTypeText,
+          message: formattedAddress,
+          building_year: formData.buildingYear,
+          payment_link: getPaymentLink(formData.buildingType)
+        };
 
-        const response = await fetch('/api/send-email', {
-          method: 'POST',
-          body: formDataToSend,
-        });
-
-        if (!response.ok) throw new Error('Failed to send email');
-
-        alert('Ihre Proberechnung wurde erfolgreich per E-Mail versendet!');
-      } else {
-        // Per WhatsApp senden
-        // WhatsApp Business API Message Template
-        const whatsappMessage = encodeURIComponent(
-          `Ihre Proberechnung für den Energieausweis ist fertig! 🎉\n\n` +
-          `Hier ist Ihr persönliches Angebot für:\n` +
-          `${formattedAddress}\n` +
-          `Baujahr: ${formData.buildingYear}\n\n` +
-          `Jetzt direkt bestellen: ${getPaymentLink(formData.buildingType)}`
+        // EmailJS senden
+        const response = await emailjs.send(
+          process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
+          process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!,
+          templateParams,
+          process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!
         );
 
-        // WhatsApp Link mit vorformulierter Nachricht
-        const whatsappLink = `https://wa.me/${formData.phone.replace(/\D/g, '')}?text=${whatsappMessage}`;
-        
-        // Öffne WhatsApp in neuem Tab
-        window.open(whatsappLink, '_blank');
+        if (response.status === 200) {
+          // Lokaler Download
+          const link = document.createElement('a');
+          link.download = formatFileName(formData.address);
+          link.href = dataUrl;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
 
-        alert('Ihre Proberechnung wurde an WhatsApp weitergeleitet!');
+          alert('Ihre Proberechnung wurde erfolgreich heruntergeladen und die E-Mail wurde versendet!');
+        } else {
+          throw new Error('Failed to send email');
+        }
       }
-
     } catch (error) {
-      console.error('Error handling submission:', error);
-      alert('Es gab einen Fehler bei der Verarbeitung. Bitte versuchen Sie es später erneut.');
+      alert('Es gab einen Fehler. Bitte versuchen Sie es später erneut.');
     }
   };
 

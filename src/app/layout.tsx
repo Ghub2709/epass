@@ -4,6 +4,7 @@ import './globals.css'
 import ScrollToTop from '@/components/ScrollToTop'
 import { useEffect } from 'react'
 import { metadata } from './metadata'
+import emailjs from '@emailjs/browser';
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -31,6 +32,21 @@ export default function RootLayout({
 
         document.head.appendChild(script)
       });
+    }
+  }, [])
+
+  useEffect(() => {
+    const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY;
+    if (!publicKey) {
+      console.error('EmailJS Public Key ist nicht definiert!');
+      return;
+    }
+    
+    try {
+      emailjs.init(publicKey);
+      console.log('EmailJS erfolgreich initialisiert');
+    } catch (error) {
+      console.error('Fehler bei der EmailJS-Initialisierung:', error);
     }
   }, [])
 
