@@ -43,7 +43,7 @@ export default function Process() {
     {
       number: "2",
       title: "Gratis Probeberechnung prüfen",
-      description: "Wir erstellen eine kostenlose Proberechnung für Sie und senden diese per E-Mail oder WhatsApp zu",
+      description: "Wir erstellen Ihre kostenlose Proberechnung. Diese schicken wir per E-Mail oder Sie laden sie einfach herunter, ganz ohne Angabe weiterer Daten.",
       icon: "📊"
     },
     {
