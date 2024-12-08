@@ -21,11 +21,11 @@ export default function FAQ() {
     },
     {
       question: "Welche Unterlagen benötige ich für die Ausstellung?",
-      answer: "Für die Ausstellung benötigen wir lediglich die Adresse des Gebäudes, das Baujahr und bei einem Verbrauchsausweis die Energieverbrauchsdaten der letzten 36 Monate. Alle weiteren erforderlichen Informationen ermitteln wir für Sie."
+      answer: "Für die Ausstellung benötigen wir lediglich die Adresse des Gebäudes, das Baujahr und die Art des Objektes. Nach der Bestellung benötigen wir lediglich 2 Bilder von Ihnen und das Baujahr Ihrer Heizungsanlage. Alle weiteren erforderlichen Informationen ermitteln wir für Sie."
     },
     {
       question: "Verbrauchs- oder Bedarfsausweis - welcher ist der Richtige für mich?",
-      answer: "Die Wahl hängt von verschiedenen Faktoren ab. Für Wohngebäude mit weniger als 5 Wohneinheiten, die vor 1977 erbaut wurden, ist ein Bedarfsausweis vorgeschrieben. Für alle anderen Gebäude können Sie frei wählen. Der Verbrauchsausweis ist in der Regel günstiger und basiert auf dem tatsächlichen Verbrauch."
+      answer: "Die Wahl hängt von verschiedenen Faktoren ab. Allerdings stellen wir ausschließlich Bedarfsausweise aus. Diese haben die höchstmögliche Qualität und geben tatsächlich Auskunft über die energetische Beschaffenheit des Gebäudes. Einzige Ausnahme von dieser Verfahrensweise stellen die Nichtwohngebäude dar, da hier unverhältnismäßig hohe Aufwände und Kosten zur Erstellung eines Bedarfsausweises entstehen."
     },
     {
       question: "Wie schnell erhalte ich meinen Energieausweis?",
