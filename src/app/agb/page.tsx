@@ -5,8 +5,7 @@ import ScrollToTop from '@/components/ScrollToTop'
 
 export default function AGBPage() {
   const scrollToForm = () => {
-    const basePath = process.env.NODE_ENV === 'production' ? '/epass' : '';
-    window.location.href = `${basePath}/#contact-form`;
+    window.location.href = '/#contact-form';
   }
 
   return (

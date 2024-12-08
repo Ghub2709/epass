@@ -61,9 +61,9 @@ export default function Footer() {
                 >
                   Über uns
                 </button>
-                <a href="#process-section" className="hover:text-white transition-colors">Team</a>
-                <a href="#contact-section" className="hover:text-white transition-colors">Karriere</a>
-                <a href="#contact-section" className="hover:text-white transition-colors">Partner werden</a>
+                <a href="/#process-section" className="hover:text-white transition-colors">Team</a>
+                <a href="/#contact-section" className="hover:text-white transition-colors">Karriere</a>
+                <a href="/#contact-section" className="hover:text-white transition-colors">Partner werden</a>
               </div>
             </div>
 
@@ -73,10 +73,10 @@ export default function Footer() {
                 Service
               </h3>
               <div className="flex flex-col space-y-2">
-                <a href="#hero-input" className="hover:text-white transition-colors">Energieausweis beantragen</a>
-                <a href="#pricing-section" className="hover:text-white transition-colors">Preise & Leistungen</a>
-                <a href="#faq-section" className="hover:text-white transition-colors">Häufige Fragen</a>
-                <a href="#contact-section" className="hover:text-white transition-colors">Kontakt</a>
+                <a href="/#hero-input" className="hover:text-white transition-colors">Energieausweis beantragen</a>
+                <a href="/#pricing-section" className="hover:text-white transition-colors">Preise & Leistungen</a>
+                <a href="/#faq-section" className="hover:text-white transition-colors">Häufige Fragen</a>
+                <a href="/#contact-section" className="hover:text-white transition-colors">Kontakt</a>
               </div>
             </div>
 
