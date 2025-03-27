@@ -1,6 +1,5 @@
 'use client'
 import { useState } from 'react'
-import HeygenAvatar from '../HeygenAvatar'
 
 interface FAQItem {
   question: string
@@ -115,7 +114,6 @@ export default function FAQ() {
           </button>
         </div>
       </div>
-      <HeygenAvatar />
     </section>
   )
 } 

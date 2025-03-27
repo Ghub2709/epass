@@ -1,7 +1,6 @@
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { getBlogPost } from '@/lib/blog'
-import HeygenAvatar from '@/components/HeygenAvatar'
 import BlogCTA from '@/components/blog/BlogCTA'
 import { getAllBlogPosts } from '@/lib/blog'
 
@@ -106,8 +105,6 @@ export default async function BlogPost({ params }: { params: { slug: string } })
           </article>
         </div>
       </section>
-
-      <HeygenAvatar />
     </main>
   )
 } 
