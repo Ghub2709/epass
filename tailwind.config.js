@@ -21,6 +21,21 @@ module.exports = {
           900: '#14532d',
         },
       },
+      animation: {
+        'gradient-x': 'gradient-x 5s ease infinite',
+      },
+      keyframes: {
+        'gradient-x': {
+          '0%, 100%': {
+            'background-size': '200% 200%',
+            'background-position': 'left center',
+          },
+          '50%': {
+            'background-size': '200% 200%',
+            'background-position': 'right center',
+          },
+        },
+      },
       container: {
         center: true,
         padding: '1rem',

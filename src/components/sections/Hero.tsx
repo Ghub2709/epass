@@ -46,14 +46,17 @@ export default function Hero() {
 
             <div className="space-y-12 text-center max-w-xl">
               <h1 className="text-4xl md:text-5xl font-bold leading-tight">
-                Energieausweis sofort online berechnen
+                Bremer Energieausweis-Express
                 <span className="block text-green-600 mt-8">100% amtlich anerkannt</span>
               </h1>
               
               <h2 className="text-xl text-gray-600 leading-relaxed">
-                Sparen Sie <span className="font-bold">Zeit und bis zu 40% Kosten</span> mit unserem Express-Service. 
-                Keine Vor-Ort-Termine nötig.
+                Lokal. Persönlich. Digital.
               </h2>
+              
+              <p className="text-gray-600 leading-relaxed">
+                Ihr Energieausweis von echten Bremer Experten – nicht von anonymen Online-Portalen. Genießen Sie die Vorteile eines lokalen Anbieters mit digitaler Effizienz: schnelle Erstellung, persönliche Beratung und bei Bedarf Vor-Ort-Service. Starten Sie jetzt Ihre kostenlose Proberechnung.
+              </p>
 
               {/* Price Comparison */}
               <div className="bg-white p-6 rounded-xl shadow-sm border border-green-100 mx-auto max-w-md">

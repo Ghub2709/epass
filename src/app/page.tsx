@@ -1,4 +1,5 @@
 import HeroInput from '@/components/sections/HeroInput'
+import VideoSection from '@/components/sections/VideoSection'
 import Features from '@/components/sections/Features'
 import Process from '@/components/sections/Process'
 import Pricing from '@/components/sections/Pricing'
@@ -12,6 +13,7 @@ export default function Home() {
   return (
     <main>
       <HeroInput />
+      <VideoSection />
       <Features />
       <Process />
       <Pricing />

@@ -1,11 +1,8 @@
 'use client'
 import AddressForm from '@/components/AddressForm'
 import { motion } from 'framer-motion'
-import { useState } from 'react'
 
 export default function HeroInput() {
-  const [isVideoOpen, setIsVideoOpen] = useState(false);
-
   return (
     <section id="hero-input" className="relative bg-gradient-to-b from-green-50 via-white to-white min-h-[80vh] flex items-center">
       <div className="container mx-auto px-4 py-12">
@@ -40,61 +37,66 @@ export default function HeroInput() {
               </div>
 
               {/* Main content - zentriert auf Mobile */}
-              <div className="space-y-8 text-center lg:text-left">
-                <h1 className="text-4xl lg:text-5xl font-bold leading-tight">
-                  <span className="text-green-600">In 24 Stunden</span> zu
-                  <span className="block mt-2">Ihrem</span>
-                  <span className="block mt-2">Energieausweis</span>
-                </h1>
-                
-                <h2 className="text-2xl text-gray-600 mt-8">
-                  Bis zu <span className="text-green-600">40% günstiger</span> als beim lokalen Anbieter
-                </h2>
-                
-                <p className="text-lg text-gray-600 mt-8">
-                  Sparen Sie sich den Vor-Ort-Termin und erstellen Sie Ihren amtlich anerkannten Energieausweis komplett online. Starten Sie jetzt mit Ihrer kostenlosen Proberechnung oder werfen Sie einen Blick in unser Erklärvideo, beides lohnt sich.
-                </p>
+              <div className="space-y-8 text-center lg:text-left relative">
+                {/* Dekorative Elemente im Hintergrund */}
+                <div className="absolute -top-12 -left-12 w-36 h-36 bg-green-100 rounded-full opacity-40 blur-3xl -z-10"></div>
+                <div className="absolute top-1/3 -right-8 w-24 h-24 bg-blue-100 rounded-full opacity-30 blur-2xl -z-10"></div>
 
-                {/* Video Button - zentriert auf Mobile */}
-                <div className="space-y-8 md:space-y-0 flex flex-col items-center lg:items-start">
-                  <button
-                    onClick={() => setIsVideoOpen(true)}
-                    className="flex items-center gap-3 px-6 py-3 bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 group"
-                  >
-                    <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
-                      <svg 
-                        className="w-6 h-6 text-green-600 transform group-hover:scale-110 transition-transform" 
-                        fill="currentColor" 
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M8 5v14l11-7z"/>
-                      </svg>
-                    </div>
-                    <span className="font-medium">Erklärvideo ansehen</span>
-                  </button>
-
-                  {/* Statischer Pfeil mit modernerem Design */}
-                  <div className="flex justify-center w-full lg:hidden mt-8">
-                    <svg 
-                      className="w-12 h-12 text-green-600" 
-                      viewBox="0 0 24 24" 
-                      fill="none" 
-                      stroke="currentColor" 
-                      strokeWidth="1.5"
-                    >
-                      <path 
-                        d="M12 6v12m0 0l-4-4m4 4l4-4" 
-                        strokeLinecap="round" 
-                        strokeLinejoin="round"
-                      />
-                      <path 
-                        d="M12 6v12" 
-                        strokeLinecap="round" 
-                        strokeDasharray="1 3"
-                        className="opacity-30"
-                      />
-                    </svg>
-                  </div>
+                {/* Haupttitel mit Split-Design */}
+                <div className="relative">
+                  <h1 className="text-4xl lg:text-6xl font-bold leading-tight">
+                    <span className="block relative">Bremer</span>
+                    <span className="block relative">
+                      <span className="bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-green-800 animate-gradient-x">Energieausweis-Express</span>
+                    </span>
+                  </h1>
+                </div>
+                
+                {/* Untertitel mit moderner Darstellung */}
+                <div className="mt-8 flex items-center justify-center lg:justify-start">
+                  <div className="h-[2px] w-8 bg-gradient-to-r from-transparent to-green-500"></div>
+                  <h2 className="mx-4 text-2xl font-semibold text-gray-800 tracking-wider">
+                    <span className="text-green-600">Lokal.</span> <span className="text-gray-700">Persönlich.</span> <span className="text-green-700">Digital.</span>
+                  </h2>
+                  <div className="h-[2px] w-8 bg-gradient-to-l from-transparent to-green-500"></div>
+                </div>
+                
+                {/* Hauptinhalt ohne Box */}
+                <div className="mt-8">
+                  <p className="text-lg text-gray-700 leading-relaxed">
+                    Ihr Energieausweis von <span className="font-semibold text-green-600">echten Bremer Experten</span> – nicht von anonymen Online-Portalen. Genießen Sie die Vorteile eines lokalen Anbieters mit digitaler Effizienz:
+                  </p>
+                  
+                  {/* Feature List statt Grid */}
+                  <ul className="mt-6 space-y-4">
+                    <li className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-green-100 flex-shrink-0 flex items-center justify-center">
+                        <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                      </div>
+                      <span className="font-medium text-gray-800">Schnelle Erstellung</span>
+                    </li>
+                    
+                    <li className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-green-100 flex-shrink-0 flex items-center justify-center">
+                        <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
+                        </svg>
+                      </div>
+                      <span className="font-medium text-gray-800">Persönliche Beratung</span>
+                    </li>
+                    
+                    <li className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-green-100 flex-shrink-0 flex items-center justify-center">
+                        <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                      </div>
+                      <span className="font-medium text-gray-800">Vor-Ort-Service</span>
+                    </li>
+                  </ul>
                 </div>
               </div>
             </motion.div>
@@ -106,45 +108,6 @@ export default function HeroInput() {
           </div>
         </div>
       </div>
-
-      {/* Video Modal */}
-      {isVideoOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4"
-          onClick={() => setIsVideoOpen(false)}
-        >
-          <div 
-            className="relative w-full max-w-[540px] bg-black rounded-xl overflow-hidden"
-            onClick={e => e.stopPropagation()}
-          >
-            {/* Close Button */}
-            <button
-              onClick={() => setIsVideoOpen(false)}
-              className="absolute top-4 right-4 text-white hover:text-gray-300 z-10 bg-black bg-opacity-50 rounded-full p-2"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-
-            {/* Video Container mit 9:16 Aspect Ratio */}
-            <div className="relative pt-[177.78%]">
-              <video
-                className="absolute inset-0 w-full h-full object-contain bg-black"
-                controls
-                autoPlay
-                playsInline
-                muted={false}
-                preload="auto"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <source src="/videos/StephanGrosser.mp4" type="video/mp4" />
-                Ihr Browser unterstützt keine Videos.
-              </video>
-            </div>
-          </div>
-        </div>
-      )}
     </section>
   )
 } 

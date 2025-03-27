@@ -28,23 +28,25 @@ emailjs.init(process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!);
 
 // Hilfsfunktion für Admin-Benachrichtigungen
 const sendAdminNotification = async (
-  action: 'email' | 'download',
+  action: 'email' | 'whatsapp',
   formData: {
     address: string,
     buildingType: string,
     buildingYear: string,
-    email?: string
+    email?: string,
+    phone?: string
   },
   buildingTypeText: string
 ) => {
   try {
     const adminTemplateParams = {
       to_email: 'info@premium-energiepass.online',
-      action_type: action === 'email' ? 'E-Mail Versand' : 'Direkter Download',
+      action_type: action === 'email' ? 'E-Mail Versand' : 'WhatsApp Versand',
       address: formData.address,
       building_type: buildingTypeText,
       building_year: formData.buildingYear,
-      user_email: formData.email || 'Direkter Download - keine E-Mail angegeben',
+      user_email: formData.email || 'Keine E-Mail angegeben',
+      user_phone: action === 'whatsapp' ? (formData.phone || 'Nicht angegeben') : 'Nicht relevant (E-Mail Versand)', 
       timestamp: new Date().toLocaleString('de-DE'),
       payment_link: getPaymentLink(formData.buildingType)
     };
@@ -63,7 +65,7 @@ const sendAdminNotification = async (
 };
 
 export default function AddressForm({ className = "", isHeroVariant = false }: AddressFormProps) {
-  const [formStep, setFormStep] = useState<'initial' | 'loading' | 'email'>('initial')
+  const [formStep, setFormStep] = useState<'initial' | 'loading' | 'email' | 'success'>('initial')
   const [formData, setFormData] = useState({
     address: '',
     buildingYear: '',
@@ -284,6 +286,12 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Überprüfen, ob eine Telefonnummer eingegeben wurde, wenn WhatsApp ausgewählt ist
+    if (formData.contactMethod === 'whatsapp' && !formData.phone.trim()) {
+      alert('Bitte geben Sie Ihre Handynummer ein.');
+      return;
+    }
+    
     try {
       // Template basierend auf Baujahr auswählen
       const year = parseInt(formData.buildingYear);
@@ -403,34 +411,18 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
           generatePDF(dataUrl, fullUrl, formData.address);
           await sendAdminNotification('email', formData, buildingTypeText);
 
-          // Benachrichtigung
-          const notification = document.createElement('div');
-          notification.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-500 ease-in-out';
-          notification.textContent = 'Ihre Proberechnung wurde als PDF heruntergeladen und die E-Mail wurde versendet. Das PDF ist komplett klickbar!';
-          document.body.appendChild(notification);
-
-          setTimeout(() => {
-            notification.style.opacity = '0';
-            setTimeout(() => document.body.removeChild(notification), 500);
-          }, 3000);
+          // Zum Erfolgsstatus wechseln
+          setFormStep('success');
         } else {
           throw new Error('Failed to send email');
         }
-      } else {
+      } else if (formData.contactMethod === 'whatsapp') {
         // PDF generieren und herunterladen
         generatePDF(dataUrl, fullUrl, formData.address);
-        await sendAdminNotification('download', formData, buildingTypeText);
+        await sendAdminNotification('whatsapp', formData, buildingTypeText);
 
-        // Benachrichtigung
-        const notification = document.createElement('div');
-        notification.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-500 ease-in-out';
-        notification.textContent = 'Ihre Proberechnung wurde als PDF heruntergeladen. Das gesamte Dokument ist klickbar!';
-        document.body.appendChild(notification);
-
-        setTimeout(() => {
-          notification.style.opacity = '0';
-          setTimeout(() => document.body.removeChild(notification), 500);
-        }, 3000);
+        // Zum Erfolgsstatus wechseln
+        setFormStep('success');
       }
     } catch (error) {
       alert('Es gab einen Fehler. Bitte versuchen Sie es später erneut.');
@@ -452,6 +444,48 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
           <p className="text-gray-600 text-center text-lg">
             Wir prüfen Ihre Eingaben und erstellen Ihre Proberechnung ...
           </p>
+        </div>
+      )
+    }
+
+    if (formStep === 'success') {
+      return (
+        <div>
+          <div className="text-center mb-6">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
+              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">
+              Vielen Dank! 🎉
+            </h3>
+            <p className="text-gray-600 mb-6">
+              Ihre Proberechnung wurde erfolgreich heruntergeladen.
+              {formData.contactMethod === 'email' 
+                ? ' Wir haben Ihnen auch eine E-Mail mit allen Informationen gesendet.' 
+                : ' Wir werden Ihnen alle Informationen per WhatsApp zusenden.'}
+               Wir freuen uns auf den weiteren Austausch mit Ihnen!
+            </p>
+            
+            <div className="border-t border-gray-200 pt-6 mt-6">
+              <p className="font-medium text-gray-700 mb-4">
+                Für besonders eilige Fälle, rufen Sie mich direkt an!
+              </p>
+              <p className="text-gray-600 mb-4">
+                Ihr Stephan Grosser
+              </p>
+              <a 
+                href="tel:004915206077767"
+                className="w-full flex items-center justify-center px-8 py-4 border border-transparent text-base font-medium rounded-xl text-white bg-green-600 hover:bg-green-700 transition-colors group"
+              >
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                </svg>
+                <span>+49 1520 6077767</span>
+              </a>
+            </div>
+          </div>
         </div>
       )
     }
@@ -491,142 +525,14 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
               </button>
 
               <button
-                type="button"
-                onClick={async (e) => {
-                  e.preventDefault();
-                  try {
-                    // Template basierend auf Baujahr auswählen
-                    const year = parseInt(formData.buildingYear);
-                    let templateName = '';
-                    
-                    if (year <= 1959) {
-                      templateName = '1900-1959.png';
-                    } else if (year >= 1960 && year <= 1975) {
-                      templateName = '1960-1975.png';
-                    } else if (year >= 1976 && year <= 1990) {
-                      templateName = '1976-1990.png';
-                    } else {
-                      templateName = '1991-2024.png';
-                    }
-
-                    // Payment Link und QR Code generieren
-                    const paymentLink = getPaymentLink(formData.buildingType);
-                    const params = new URLSearchParams({
-                      address: formData.address,
-                      type: formData.buildingType,
-                      year: formData.buildingYear
-                    });
-                    const fullUrl = `${paymentLink}&${params.toString()}`;
-                    
-                    // QR Code generieren
-                    const qrCodeDataUrl = await QRCode.toDataURL(fullUrl);
-                    const qrCodeImage = new Image();
-                    qrCodeImage.src = qrCodeDataUrl;
-                    await new Promise((resolve) => {
-                      qrCodeImage.onload = resolve;
-                    });
-
-                    // Canvas erstellen und Template laden
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    if (!ctx) throw new Error('Could not get canvas context');
-
-                    // Template laden
-                    const templateImg = new Image();
-                    templateImg.crossOrigin = "anonymous";
-                    templateImg.src = `/images/templates/${templateName}`;
-                    
-                    await new Promise((resolve, reject) => {
-                      templateImg.onload = resolve;
-                      templateImg.onerror = reject;
-                    });
-
-                    // Canvas Größe setzen und Template zeichnen
-                    canvas.width = templateImg.width;
-                    canvas.height = templateImg.height;
-                    ctx.drawImage(templateImg, 0, 0);
-
-                    // Text Style setzen
-                    ctx.font = 'bold 24px Arial';
-                    ctx.fillStyle = '#333333';
-
-                    // Text hinzufügen
-                    const buildingTypeText = formData.buildingType === 'house' ? 'Einfamilienhaus' : 
-                                           formData.buildingType === 'apartment4' ? 'Mehrfamilienhaus bis 4 Wohneinheiten' :
-                                           formData.buildingType === 'apartment5' ? 'Mehrfamilienhaus über 4 Wohneinheiten' :
-                                           'Nichtwohngebäude (NWG)';
-
-                    const formattedAddress = formatAddress(formData.address);
-                    
-                    ctx.fillText(buildingTypeText, 140, 870);
-                    ctx.fillText(formattedAddress, 140, 920);
-                    ctx.fillText(`Baujahr ${formData.buildingYear}`, 140, 970);
-
-                    // QR Code zeichnen
-                    ctx.drawImage(qrCodeImage, canvas.width - 483, canvas.height - 317, 187, 187);
-
-                    // Klickbaren Bereich zum QR Code hinzufügen
-                    canvas.addEventListener('click', (e) => {
-                      const rect = canvas.getBoundingClientRect();
-                      const x = e.clientX - rect.left;
-                      const y = e.clientY - rect.top;
-                      
-                      // QR Code Bereich definieren
-                      const qrLeft = canvas.width - 483;
-                      const qrTop = canvas.height - 317;
-                      const qrWidth = 187;
-                      const qrHeight = 187;
-                      
-                      // Prüfen ob der Klick im QR Code Bereich war
-                      if (x >= qrLeft && x <= qrLeft + qrWidth && 
-                          y >= qrTop && y <= qrTop + qrHeight) {
-                        window.open(fullUrl, '_blank');
-                      }
-                    });
-
-                    // Cursor ändern wenn über QR Code
-                    canvas.style.cursor = 'pointer';
-
-                    // PNG generieren
-                    const dataUrl = canvas.toDataURL('image/png');
-
-                    // PDF generieren und herunterladen
-                    generatePDF(dataUrl, fullUrl, formData.address);
-
-                    // Admin-Benachrichtigung für Download
-                    await sendAdminNotification('download', formData, buildingTypeText);
-
-                    // Benachrichtigung
-                    const notification = document.createElement('div');
-                    notification.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-500 ease-in-out';
-                    notification.textContent = 'Ihre Proberechnung wurde als PDF heruntergeladen. Das gesamte Dokument ist klickbar!';
-                    document.body.appendChild(notification);
-
-                    setTimeout(() => {
-                      notification.style.opacity = '0';
-                      setTimeout(() => document.body.removeChild(notification), 500);
-                    }, 3000);
-
-                  } catch (error) {
-                    console.error('Error:', error);
-                    const errorNotification = document.createElement('div');
-                    errorNotification.className = 'fixed bottom-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg';
-                    errorNotification.textContent = 'Es gab einen Fehler beim Herunterladen der Proberechnung.';
-                    document.body.appendChild(errorNotification);
-                    
-                    setTimeout(() => {
-                      errorNotification.style.opacity = '0';
-                      setTimeout(() => document.body.removeChild(errorNotification), 500);
-                    }, 3000);
-                  }
-                }}
+                onClick={() => setFormData(prev => ({ ...prev, contactMethod: 'whatsapp' }))}
                 className="w-full flex items-center justify-between px-6 py-4 bg-white border-2 border-gray-200 rounded-xl hover:border-green-500 hover:shadow-lg transition-all duration-300 group"
               >
                 <div className="flex items-center gap-3">
                   <svg className="w-6 h-6 text-gray-400 group-hover:text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                   </svg>
-                  <span className="font-medium">Direkt herunterladen</span>
+                  <span className="font-medium">Per WhatsApp</span>
                 </div>
                 <svg className="w-5 h-5 text-gray-400 group-hover:text-green-500 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
