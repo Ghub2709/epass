@@ -22,14 +22,14 @@ export default function Features() {
       highlight: "AMTLICH"
     },
     {
-      title: "Bis zu 40% günstiger",
-      description: "Sparen Sie im Vergleich zu lokalen Anbietern",
+      title: "Mehrwertsteuer gespart",
+      description: "Bei Online Bestellung sparen Sie 19% - garantiert!",
       icon: "💰",
       highlight: "SPARPREIS"
     },
     {
-      title: "Komplett Online",
-      description: "Kein Vor-Ort Termin notwendig - sparen Sie Zeit",
+      title: "Vor-Ort und Online",
+      description: "Online Erstellung wo möglich, Vor-Ort Service wo nötig.",
       icon: "🖥",
       highlight: "ZEITSPAREND"
     }

@@ -53,18 +53,6 @@ export default function FAQ() {
           <p className="text-gray-600 mb-8">
             Hier finden Sie Antworten auf die wichtigsten Fragen rund um den Energieausweis
           </p>
-          <div className="inline-block bg-green-50 rounded-full p-1">
-            <span className="flex items-center gap-2 px-4 py-2">
-              <span className="flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-green-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                <span className="inline-block bg-green-100 text-green-800 px-4 py-1 rounded-full text-sm font-medium mb-4"></span>
-              </span>
-              <span className="text-green-800 text-sm font-medium">
-                Neu: Fragen Sie unseren KI-Assistenten. Einfach den Chat Button drücken!
-              </span>
-            </span>
-          </div>
         </div>
 
         <div className="space-y-4">

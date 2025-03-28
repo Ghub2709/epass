@@ -68,7 +68,7 @@ export default function HeroInput() {
                   </p>
                   
                   {/* Feature List statt Grid */}
-                  <ul className="mt-6 space-y-4">
+                  <ul className="mt-6 space-y-4 text-left">
                     <li className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-green-100 flex-shrink-0 flex items-center justify-center">
                         <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -125,6 +125,42 @@ export default function HeroInput() {
 
             {/* Right Column - Form */}
             <div className="w-full lg:mx-[10%] relative z-10">
+              {/* Stylischer Pfeil nach unten vor dem Formular */}
+              <div className="flex justify-center mb-6">
+                <div className="w-24 h-24 flex items-center justify-center relative group cursor-pointer">
+                  {/* Äußerer pulsierender Kreis */}
+                  <div className="absolute w-16 h-16 rounded-full bg-green-100 opacity-70 animate-ping"></div>
+                  
+                  {/* Innerer Kreis mit Farbverlauf */}
+                  <div className="absolute w-14 h-14 rounded-full bg-gradient-to-br from-green-400 to-green-600 shadow-lg transform transition-transform duration-300 group-hover:scale-110"></div>
+                  
+                  {/* Pfeil */}
+                  <div className="absolute w-14 h-14 flex items-center justify-center">
+                    <svg 
+                      className="w-8 h-8 text-white transform transition-transform duration-500 group-hover:translate-y-1" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round" 
+                        strokeWidth={2.5} 
+                        d="M19 14l-7 7m0 0l-7-7m7 7V3" 
+                      />
+                    </svg>
+                  </div>
+                  
+                  {/* Strahlende Linien */}
+                  <div className="absolute w-20 h-20 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-0.5 h-4 bg-gradient-to-b from-green-300 to-transparent"></div>
+                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0.5 h-4 bg-gradient-to-t from-green-300 to-transparent"></div>
+                    <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-4 h-0.5 bg-gradient-to-r from-green-300 to-transparent"></div>
+                    <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-4 h-0.5 bg-gradient-to-l from-green-300 to-transparent"></div>
+                  </div>
+                </div>
+              </div>
+              
               <AddressForm isHeroVariant={true} />
             </div>
           </div>
