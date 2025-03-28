@@ -12,7 +12,7 @@ export default function VideoSection() {
   }
 
   const scrollToForm = () => {
-    const formElement = document.getElementById('hero-input');
+    const formElement = document.getElementById('contact-form');
     if (formElement) {
       formElement.scrollIntoView({ behavior: 'smooth' });
     }
@@ -44,11 +44,21 @@ export default function VideoSection() {
                 <span> es wirklich ist!</span>
               </h2>
               
-              <p className="text-lg text-gray-700 mb-8 leading-relaxed">
-                Unser kurzes Video zeigt Ihnen, wie Sie in nur wenigen Minuten Ihren gesetzlich vorgeschriebenen Energieausweis online erhalten können - ganz ohne komplizierte Formulare oder Vor-Ort-Termine.
-              </p>
+              <div className="space-y-4">
+                <p className="text-lg text-gray-700 leading-relaxed">
+                  Unser kurzes Video zeigt Ihnen, wie Sie schnell, unkompliziert und günstig Ihren Energieausweis erhalten können – digital wenn möglich, persönlich wenn nötig. 
+                </p>
+                
+                <p className="text-lg text-gray-700 leading-relaxed">
+                  Als <b>Bremer Anbieter</b> bieten wir Ihnen das <b>Beste aus allen Welten</b>: 
+                </p>
+                
+                <p className="text-lg text-gray-700 leading-relaxed">
+                  Online-Effizienz & Preise sowie lokale Expertise mit Vor-Ort-Service.
+                </p>
+              </div>
               
-              <div className="space-y-6">
+              <div className="space-y-6 mt-6">
                 <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
                   <div className="flex items-center gap-3 text-lg">
                     <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
@@ -66,13 +76,21 @@ export default function VideoSection() {
                     </div>
                     <span>100% amtlich anerkannt</span>
                   </div>
+                  <div className="flex items-center gap-3 text-lg">
+                    <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                      <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <span>Bestes Ergebnis</span>
+                  </div>
                 </div>
                 
                 <button
                   onClick={scrollToForm}
                   className="inline-flex items-center px-8 py-4 text-lg font-semibold text-white bg-gradient-to-r from-green-600 to-green-700 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300"
                 >
-                  Jetzt Energieausweis beantragen
+                  Erst Proberechnung, dann Energieausweis
                   <svg className="w-5 h-5 ml-2 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
