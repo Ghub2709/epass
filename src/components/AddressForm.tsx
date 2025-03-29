@@ -1,7 +1,9 @@
 'use client'
+
 import { useState, useEffect, useRef } from 'react'
 import { motion, useAnimationControls } from 'framer-motion'
 import emailjs from '@emailjs/browser'
+import { useRouter } from 'next/navigation'
 import QRCode from 'qrcode'
 import jsPDF from 'jspdf';
 
@@ -10,7 +12,7 @@ interface AddressFormProps {
   isHeroVariant?: boolean;
 }
 
-// Payment Links als Konstanten definieren
+// Payment Links
 const PAYMENT_LINKS = {
   house: "https://buy.stripe.com/6oE4iIdtrfFC7Ty288?locale=de",
   apartment4: "https://buy.stripe.com/fZeg1qgFDdxu0r6289?locale=de",
@@ -18,15 +20,12 @@ const PAYMENT_LINKS = {
   commercial: "https://buy.stripe.com/5kA7uUexv8da8XCfZ1?locale=de"
 };
 
-// Hilfsfunktion für Payment Links - VOR sendAdminNotification definieren
+// Helper function for payment links
 const getPaymentLink = (buildingType: string) => {
   return PAYMENT_LINKS[buildingType as keyof typeof PAYMENT_LINKS];
 };
 
-// EmailJS einmalig initialisieren
-emailjs.init(process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!);
-
-// Hilfsfunktion für Admin-Benachrichtigungen
+// Admin notification function
 const sendAdminNotification = async (
   action: 'email' | 'whatsapp',
   formData: {
@@ -51,9 +50,6 @@ const sendAdminNotification = async (
       payment_link: getPaymentLink(formData.buildingType)
     };
 
-    console.log('Sending admin notification with template:', process.env.NEXT_PUBLIC_EMAILJS_ADMIN_TEMPLATE_ID);
-    console.log('Admin template params:', adminTemplateParams);
-
     await emailjs.send(
       process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
       process.env.NEXT_PUBLIC_EMAILJS_ADMIN_TEMPLATE_ID!,
@@ -64,13 +60,77 @@ const sendAdminNotification = async (
   }
 };
 
+// Formatiere den Dateinamen
+const formatFileName = (address: string) => {
+  // Extrahiere Straße und Stadt
+  const parts = address.split(',');
+  const street = parts[0].trim();
+  const city = parts[1]?.trim().split(' ').pop() || '';  // Nimmt nur den Stadtnamen
+
+  // Bereinige die Strings
+  const cleanStreet = street
+    .replace(/[^\w\säöüÄÖÜß-]/g, '')  // Entferne Sonderzeichen außer Umlaute
+    .trim();
+  const cleanCity = city
+    .replace(/[^\w\säöüÄÖÜß-]/g, '')
+    .trim();
+
+  return `Ihre kostenlose Proberechnung - ${cleanStreet} in ${cleanCity} - vom Premium Energiepass Online.png`;
+};
+
+// PDF-Generierungsfunktion für beide Routen
+const generatePDF = async (dataUrl: string, fullUrl: string, formattedAddress: string) => {
+  // PNG in temporäres Image laden und warten bis es geladen ist
+  const tempImg = new Image();
+  await new Promise((resolve, reject) => {
+    tempImg.onload = resolve;
+    tempImg.onerror = reject;
+    tempImg.src = dataUrl;
+  });
+  
+  // Neue Dimensionen berechnen (900px Breite)
+  const targetWidth = 900;
+  const aspectRatio = tempImg.height / tempImg.width;
+  const targetHeight = Math.round(targetWidth * aspectRatio);
+
+  // PDF erstellen mit den skalierten Dimensionen
+  const pdf = new jsPDF({
+    orientation: targetWidth > targetHeight ? 'landscape' : 'portrait',
+    unit: 'px',
+    format: [targetWidth, targetHeight]
+  });
+
+  // Bild in skalierter Größe einfügen
+  pdf.addImage({
+    imageData: dataUrl,
+    format: 'PNG',
+    x: 0,
+    y: 0,
+    width: targetWidth,
+    height: targetHeight
+  });
+
+  // Link über das gesamte Dokument hinzufügen
+  pdf.link(0, 0, targetWidth, targetHeight, { url: fullUrl });
+
+  // PDF generieren
+  const pdfOutput = pdf.output('datauristring');
+  
+  // Download auslösen
+  const link = document.createElement('a');
+  link.download = formatFileName(formattedAddress).replace('.png', '.pdf');
+  link.href = pdfOutput;
+  link.click();
+};
+
 export default function AddressForm({ className = "", isHeroVariant = false }: AddressFormProps) {
-  const [formStep, setFormStep] = useState<'initial' | 'loading' | 'email' | 'success'>('initial')
+  const router = useRouter();
+  const [formStep, setFormStep] = useState<'initial' | 'loading' | 'email'>('initial')
   const [formData, setFormData] = useState({
     address: '',
     buildingYear: '',
     buildingType: 'house',
-    contactMethod: '', // 'email' oder 'whatsapp'
+    contactMethod: '', // 'email' or 'whatsapp'
     email: '',
     phone: ''
   })
@@ -123,27 +183,6 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
     }
   }, [formStep])
 
-  useEffect(() => {
-    if (formStep === 'initial') {
-      let currentAvatar = 4;
-      const interval = setInterval(() => {
-        if (currentAvatar >= 7) {
-          clearInterval(interval);
-          return;
-        }
-        
-        currentAvatar++;
-        setVisibleAvatars(currentAvatar);
-        setOrderCount(23 + (currentAvatar - 4));
-      }, 2000);
-
-      return () => clearInterval(interval);
-    } else {
-      setVisibleAvatars(7);
-      setOrderCount(26);
-    }
-  }, [formStep]);
-
   // Initialize Google Places Autocomplete
   useEffect(() => {
     const handleFocus = () => {
@@ -193,10 +232,10 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
       return;
     }
 
-    // Extrahiere den Straßenteil (alles vor dem ersten Komma)
+    // Extract street part (everything before the first comma)
     const streetPart = formData.address.split(',')[0];
     
-    // Prüfe nur den Straßenteil auf Hausnummer
+    // Check only the street part for a house number
     const hasHouseNumber = /\s+\d+(-?\d*)?[a-zA-Z]?\s*$/.test(streetPart);
 
     if (!hasHouseNumber) {
@@ -210,83 +249,19 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
     setTimeout(() => setFormStep('email'), 5000);
   }
 
-  // Adresse formatieren
+  // Format address
   const formatAddress = (fullAddress: string) => {
-    // Extrahiere den Straßenteil und die Stadt
     const parts = fullAddress.split(',');
-    const street = parts[0].trim();  // z.B. "Quelkhorner Straße 37"
-    const city = parts[1]?.trim().split(' ').pop() || '';  // Nimmt nur den Stadtnamen, z.B. "Bremen"
+    const street = parts[0].trim();
+    const city = parts[1]?.trim().split(' ').pop() || '';
     
     return city ? `${street} in ${city}` : street;
-  };
-
-  // Formatiere den Dateinamen
-  const formatFileName = (address: string) => {
-    // Extrahiere Straße und Stadt
-    const parts = address.split(',');
-    const street = parts[0].trim();
-    const city = parts[1]?.trim().split(' ').pop() || '';  // Nimmt nur den Stadtnamen
-
-    // Bereinige die Strings
-    const cleanStreet = street
-      .replace(/[^\w\säöüÄÖÜß-]/g, '')  // Entferne Sonderzeichen außer Umlaute
-      .trim();
-    const cleanCity = city
-      .replace(/[^\w\säöüÄÖÜß-]/g, '')
-      .trim();
-
-    return `Ihre kostenlose Proberechnung - ${cleanStreet} in ${cleanCity} - vom Premium Energiepass Online.png`;
-  };
-
-  // PDF-Generierungsfunktion für beide Routen
-  const generatePDF = async (dataUrl: string, fullUrl: string, formattedAddress: string) => {
-    // PNG in temporäres Image laden und warten bis es geladen ist
-    const tempImg = new Image();
-    await new Promise((resolve, reject) => {
-      tempImg.onload = resolve;
-      tempImg.onerror = reject;
-      tempImg.src = dataUrl;
-    });
-    
-    // Neue Dimensionen berechnen (900px Breite)
-    const targetWidth = 900;
-    const aspectRatio = tempImg.height / tempImg.width;
-    const targetHeight = Math.round(targetWidth * aspectRatio);
-
-    // PDF erstellen mit den skalierten Dimensionen
-    const pdf = new jsPDF({
-      orientation: targetWidth > targetHeight ? 'landscape' : 'portrait',
-      unit: 'px',
-      format: [targetWidth, targetHeight]
-    });
-
-    // Bild in skalierter Größe einfügen
-    pdf.addImage({
-      imageData: dataUrl,
-      format: 'PNG',
-      x: 0,
-      y: 0,
-      width: targetWidth,
-      height: targetHeight
-    });
-
-    // Link über das gesamte Dokument hinzufügen
-    pdf.link(0, 0, targetWidth, targetHeight, { url: fullUrl });
-
-    // PDF generieren
-    const pdfOutput = pdf.output('datauristring');
-    
-    // Download auslösen
-    const link = document.createElement('a');
-    link.download = formatFileName(formattedAddress).replace('.png', '.pdf');
-    link.href = pdfOutput;
-    link.click();
   };
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Überprüfen, ob eine Telefonnummer eingegeben wurde, wenn WhatsApp ausgewählt ist
+    // Check if a phone number is provided when WhatsApp is selected
     if (formData.contactMethod === 'whatsapp' && !formData.phone.trim()) {
       alert('Bitte geben Sie Ihre Handynummer ein.');
       return;
@@ -363,28 +338,6 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
       // QR Code zeichnen
       ctx.drawImage(qrCodeImage, canvas.width - 483, canvas.height - 317, 187, 187);
 
-      // Klickbaren Bereich zum QR Code hinzufügen
-      canvas.addEventListener('click', (e) => {
-        const rect = canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        
-        // QR Code Bereich definieren
-        const qrLeft = canvas.width - 483;
-        const qrTop = canvas.height - 317;
-        const qrWidth = 187;
-        const qrHeight = 187;
-        
-        // Prüfen ob der Klick im QR Code Bereich war
-        if (x >= qrLeft && x <= qrLeft + qrWidth && 
-            y >= qrTop && y <= qrTop + qrHeight) {
-          window.open(fullUrl, '_blank');
-        }
-      });
-
-      // Cursor ändern wenn über QR Code
-      canvas.style.cursor = 'pointer';
-
       // PNG generieren
       const dataUrl = canvas.toDataURL('image/png');
 
@@ -408,21 +361,35 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
 
         if (response.status === 200) {
           // PDF generieren und herunterladen
-          generatePDF(dataUrl, fullUrl, formData.address);
+          await generatePDF(dataUrl, fullUrl, formData.address);
           await sendAdminNotification('email', formData, buildingTypeText);
 
-          // Zum Erfolgsstatus wechseln
-          setFormStep('success');
+          // Nach erfolgreicher PDF-Generierung und Email-Versand zur Danke-Seite weiterleiten
+          const redirectParams = new URLSearchParams({
+            address: formData.address,
+            type: formData.buildingType,
+            year: formData.buildingYear,
+            method: formData.contactMethod
+          });
+          
+          router.push(`/danke?${redirectParams.toString()}`);
         } else {
           throw new Error('Failed to send email');
         }
       } else if (formData.contactMethod === 'whatsapp') {
         // PDF generieren und herunterladen
-        generatePDF(dataUrl, fullUrl, formData.address);
+        await generatePDF(dataUrl, fullUrl, formData.address);
         await sendAdminNotification('whatsapp', formData, buildingTypeText);
 
-        // Zum Erfolgsstatus wechseln
-        setFormStep('success');
+        // Nach erfolgreicher PDF-Generierung und Admin-Benachrichtigung zur Danke-Seite weiterleiten
+        const redirectParams = new URLSearchParams({
+          address: formData.address,
+          type: formData.buildingType,
+          year: formData.buildingYear,
+          method: formData.contactMethod
+        });
+        
+        router.push(`/danke?${redirectParams.toString()}`);
       }
     } catch (error) {
       alert('Es gab einen Fehler. Bitte versuchen Sie es später erneut.');
@@ -434,9 +401,9 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
       return (
         <div className="flex flex-col items-center justify-center space-y-6">
           <div className="relative">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary-600"></div>
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-green-600"></div>
             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-              <span className="text-primary-600 text-xl font-semibold">
+              <span className="text-green-600 text-xl font-semibold">
                 {Math.round(progress)}%
               </span>
             </div>
@@ -448,54 +415,12 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
       )
     }
 
-    if (formStep === 'success') {
+    if (formStep === 'email') {
       return (
         <div>
           <div className="text-center mb-6">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
               <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">
-              Vielen Dank! 🎉
-            </h3>
-            <p className="text-gray-600 mb-6">
-              Ihre Proberechnung wurde erfolgreich heruntergeladen.
-              {formData.contactMethod === 'email' 
-                ? ' Wir haben Ihnen auch eine E-Mail mit allen Informationen gesendet.' 
-                : ' Wir werden Ihnen alle Informationen per WhatsApp zusenden.'}
-               Wir freuen uns auf den weiteren Austausch mit Ihnen!
-            </p>
-            
-            <div className="border-t border-gray-200 pt-6 mt-6">
-              <p className="font-medium text-gray-700 mb-4">
-                Für besonders eilige Fälle, rufen Sie mich direkt an!
-              </p>
-              <p className="text-gray-600 mb-4">
-                Ihr Stephan Grosser
-              </p>
-              <a 
-                href="tel:004915206077767"
-                className="w-full flex items-center justify-center px-8 py-4 border border-transparent text-base font-medium rounded-xl text-white bg-green-600 hover:bg-green-700 transition-colors group"
-              >
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                </svg>
-                <span>+49 1520 6077767</span>
-              </a>
-            </div>
-          </div>
-        </div>
-      )
-    }
-
-    if (formStep === 'email') {
-      return (
-        <div>
-          <div className="text-center mb-6">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-100 rounded-full mb-4">
-              <svg className="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
@@ -791,4 +716,4 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
       </motion.div>
     </div>
   )
-} 
+}

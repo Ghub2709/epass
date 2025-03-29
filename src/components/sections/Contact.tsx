@@ -9,7 +9,7 @@ export default function Contact() {
             Wir sind immer für Sie da
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Persönliche Beratung und Service aus Deutschland
+            Persönliche Beratung und Service aus Bremen
           </p>
         </div>
 

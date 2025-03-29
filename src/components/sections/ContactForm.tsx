@@ -6,11 +6,11 @@ export default function ContactForm() {
     <section id="contact-form" className="py-16 bg-gray-50">
       <div className="text-center max-w-4xl mx-auto mb-12 px-4 sm:px-6 md:px-0">
         <h2 className="text-4xl md:text-5xl font-bold mb-6 leading-[1.3]">
-          <span className="text-green-600">Jetzt</span> Ihren Energieausweis bestellen und <span className="text-green-600">sogar die Mehrwertsteuer sparen</span>
+          <span className="text-green-600">Jetzt</span> Ihren Energieausweis bestellen und <span className="text-green-600">19% sparen</span>
         </h2>
         <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-[1.3]">
           Über <span className="font-semibold">50.000 zufriedene Kunden</span> vertrauen auf unsere Bremer Spezial Expertise. 
-          Mit unseren Energieausweisen bekommen Sie <span className="font-semibold">das Beste beider Welten.</span> Die Schnelligkeit eines Online-Prozesses mit der Sicherheit eines lokalen Anbieters.
+          Wir bieten Ihnen <span className="font-semibold">die Schnelligkeit eines Online-Prozesses</span> mit der Sicherheit eines lokalen Anbieters.
         </p>
         
         {/* Pfeil nach unten und CTA */}

@@ -73,7 +73,7 @@ export default function Footer() {
                 Service
               </h3>
               <div className="flex flex-col space-y-2">
-                <a href="/#hero-input" className="hover:text-white transition-colors">Energieausweis beantragen</a>
+                <a href="/#contact-form" className="hover:text-white transition-colors">Energieausweis beantragen</a>
                 <a href="/#pricing-section" className="hover:text-white transition-colors">Preise & Leistungen</a>
                 <a href="/#faq-section" className="hover:text-white transition-colors">Häufige Fragen</a>
                 <a href="/#contact-section" className="hover:text-white transition-colors">Kontakt</a>
@@ -100,7 +100,7 @@ export default function Footer() {
       {/* Copyright mit Trenner */}
       <div className="container mx-auto px-4 mt-32">
         <div className="max-w-7xl mx-auto text-center text-sm pt-16 mt-16 border-t border-gray-800">
-          © 2024 Premium Energiepass® Online. Alle Rechte vorbehalten.
+          © 2025 Premium Energiepass® Online. Alle Rechte vorbehalten.
         </div>
       </div>
 

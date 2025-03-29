@@ -1,0 +1,483 @@
+diff --git a/src/components/AddressForm.tsx b/src/components/AddressForm.tsx
+index c007d9d..5265d59 100644
+--- a/src/components/AddressForm.tsx
++++ b/src/components/AddressForm.tsx
+@@ -1,16 +1,16 @@
+ 'use client'
++
+ import { useState, useEffect, useRef } from 'react'
+ import { motion, useAnimationControls } from 'framer-motion'
+ import emailjs from '@emailjs/browser'
+-import QRCode from 'qrcode'
+-import jsPDF from 'jspdf';
++import { useRouter } from 'next/navigation'
+ 
+ interface AddressFormProps {
+   className?: string;
+   isHeroVariant?: boolean;
+ }
+ 
+-// Payment Links als Konstanten definieren
++// Payment Links
+ const PAYMENT_LINKS = {
+   house: "https://buy.stripe.com/6oE4iIdtrfFC7Ty288?locale=de",
+   apartment4: "https://buy.stripe.com/fZeg1qgFDdxu0r6289?locale=de",
+@@ -18,15 +18,12 @@ const PAYMENT_LINKS = {
+   commercial: "https://buy.stripe.com/5kA7uUexv8da8XCfZ1?locale=de"
+ };
+ 
+-// Hilfsfunktion für Payment Links - VOR sendAdminNotification definieren
++// Helper function for payment links
+ const getPaymentLink = (buildingType: string) => {
+   return PAYMENT_LINKS[buildingType as keyof typeof PAYMENT_LINKS];
+ };
+ 
+-// EmailJS einmalig initialisieren
+-emailjs.init(process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!);
+-
+-// Hilfsfunktion für Admin-Benachrichtigungen
++// Admin notification function
+ const sendAdminNotification = async (
+   action: 'email' | 'whatsapp',
+   formData: {
+@@ -51,9 +48,6 @@ const sendAdminNotification = async (
+       payment_link: getPaymentLink(formData.buildingType)
+     };
+ 
+-    console.log('Sending admin notification with template:', process.env.NEXT_PUBLIC_EMAILJS_ADMIN_TEMPLATE_ID);
+-    console.log('Admin template params:', adminTemplateParams);
+-
+     await emailjs.send(
+       process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
+       process.env.NEXT_PUBLIC_EMAILJS_ADMIN_TEMPLATE_ID!,
+@@ -65,12 +59,13 @@ const sendAdminNotification = async (
+ };
+ 
+ export default function AddressForm({ className = "", isHeroVariant = false }: AddressFormProps) {
+-  const [formStep, setFormStep] = useState<'initial' | 'loading' | 'email' | 'success'>('initial')
++  const router = useRouter();
++  const [formStep, setFormStep] = useState<'initial' | 'loading' | 'email'>('initial')
+   const [formData, setFormData] = useState({
+     address: '',
+     buildingYear: '',
+     buildingType: 'house',
+-    contactMethod: '', // 'email' oder 'whatsapp'
++    contactMethod: '', // 'email' or 'whatsapp'
+     email: '',
+     phone: ''
+   })
+@@ -123,27 +118,6 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
+     }
+   }, [formStep])
+ 
+-  useEffect(() => {
+-    if (formStep === 'initial') {
+-      let currentAvatar = 4;
+-      const interval = setInterval(() => {
+-        if (currentAvatar >= 7) {
+-          clearInterval(interval);
+-          return;
+-        }
+-        
+-        currentAvatar++;
+-        setVisibleAvatars(currentAvatar);
+-        setOrderCount(23 + (currentAvatar - 4));
+-      }, 2000);
+-
+-      return () => clearInterval(interval);
+-    } else {
+-      setVisibleAvatars(7);
+-      setOrderCount(26);
+-    }
+-  }, [formStep]);
+-
+   // Initialize Google Places Autocomplete
+   useEffect(() => {
+     const handleFocus = () => {
+@@ -193,10 +167,10 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
+       return;
+     }
+ 
+-    // Extrahiere den Straßenteil (alles vor dem ersten Komma)
++    // Extract street part (everything before the first comma)
+     const streetPart = formData.address.split(',')[0];
+     
+-    // Prüfe nur den Straßenteil auf Hausnummer
++    // Check only the street part for a house number
+     const hasHouseNumber = /\s+\d+(-?\d*)?[a-zA-Z]?\s*$/.test(streetPart);
+ 
+     if (!hasHouseNumber) {
+@@ -210,219 +184,48 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
+     setTimeout(() => setFormStep('email'), 5000);
+   }
+ 
+-  // Adresse formatieren
++  // Format address
+   const formatAddress = (fullAddress: string) => {
+-    // Extrahiere den Straßenteil und die Stadt
+     const parts = fullAddress.split(',');
+-    const street = parts[0].trim();  // z.B. "Quelkhorner Straße 37"
+-    const city = parts[1]?.trim().split(' ').pop() || '';  // Nimmt nur den Stadtnamen, z.B. "Bremen"
+-    
+-    return city ? `${street} in ${city}` : street;
+-  };
+-
+-  // Formatiere den Dateinamen
+-  const formatFileName = (address: string) => {
+-    // Extrahiere Straße und Stadt
+-    const parts = address.split(',');
+     const street = parts[0].trim();
+-    const city = parts[1]?.trim().split(' ').pop() || '';  // Nimmt nur den Stadtnamen
+-
+-    // Bereinige die Strings
+-    const cleanStreet = street
+-      .replace(/[^\w\säöüÄÖÜß-]/g, '')  // Entferne Sonderzeichen außer Umlaute
+-      .trim();
+-    const cleanCity = city
+-      .replace(/[^\w\säöüÄÖÜß-]/g, '')
+-      .trim();
+-
+-    return `Ihre kostenlose Proberechnung - ${cleanStreet} in ${cleanCity} - vom Premium Energiepass Online.png`;
+-  };
+-
+-  // PDF-Generierungsfunktion für beide Routen
+-  const generatePDF = async (dataUrl: string, fullUrl: string, formattedAddress: string) => {
+-    // PNG in temporäres Image laden und warten bis es geladen ist
+-    const tempImg = new Image();
+-    await new Promise((resolve, reject) => {
+-      tempImg.onload = resolve;
+-      tempImg.onerror = reject;
+-      tempImg.src = dataUrl;
+-    });
+-    
+-    // Neue Dimensionen berechnen (900px Breite)
+-    const targetWidth = 900;
+-    const aspectRatio = tempImg.height / tempImg.width;
+-    const targetHeight = Math.round(targetWidth * aspectRatio);
+-
+-    // PDF erstellen mit den skalierten Dimensionen
+-    const pdf = new jsPDF({
+-      orientation: targetWidth > targetHeight ? 'landscape' : 'portrait',
+-      unit: 'px',
+-      format: [targetWidth, targetHeight]
+-    });
+-
+-    // Bild in skalierter Größe einfügen
+-    pdf.addImage({
+-      imageData: dataUrl,
+-      format: 'PNG',
+-      x: 0,
+-      y: 0,
+-      width: targetWidth,
+-      height: targetHeight
+-    });
+-
+-    // Link über das gesamte Dokument hinzufügen
+-    pdf.link(0, 0, targetWidth, targetHeight, { url: fullUrl });
+-
+-    // PDF generieren
+-    const pdfOutput = pdf.output('datauristring');
++    const city = parts[1]?.trim().split(' ').pop() || '';
+     
+-    // Download auslösen
+-    const link = document.createElement('a');
+-    link.download = formatFileName(formattedAddress).replace('.png', '.pdf');
+-    link.href = pdfOutput;
+-    link.click();
++    return city ? `${street} in ${city}` : street;
+   };
+ 
+   const handleEmailSubmit = async (e: React.FormEvent) => {
+     e.preventDefault();
+     
+-    // Überprüfen, ob eine Telefonnummer eingegeben wurde, wenn WhatsApp ausgewählt ist
++    // Check if a phone number is provided when WhatsApp is selected
+     if (formData.contactMethod === 'whatsapp' && !formData.phone.trim()) {
+       alert('Bitte geben Sie Ihre Handynummer ein.');
+       return;
+     }
+     
+     try {
+-      // Template basierend auf Baujahr auswählen
+-      const year = parseInt(formData.buildingYear);
+-      let templateName = '';
+-      
+-      if (year <= 1959) {
+-        templateName = '1900-1959.png';
+-      } else if (year >= 1960 && year <= 1975) {
+-        templateName = '1960-1975.png';
+-      } else if (year >= 1976 && year <= 1990) {
+-        templateName = '1976-1990.png';
+-      } else {
+-        templateName = '1991-2024.png';
+-      }
+-
+-      // Payment Link und QR Code generieren
+-      const paymentLink = getPaymentLink(formData.buildingType);
+-      const params = new URLSearchParams({
+-        address: formData.address,
+-        type: formData.buildingType,
+-        year: formData.buildingYear
+-      });
+-      const fullUrl = `${paymentLink}&${params.toString()}`;
+-      
+-      // QR Code generieren
+-      const qrCodeDataUrl = await QRCode.toDataURL(fullUrl);
+-      const qrCodeImage = new Image();
+-      qrCodeImage.src = qrCodeDataUrl;
+-      await new Promise((resolve) => {
+-        qrCodeImage.onload = resolve;
+-      });
+-
+-      // Canvas erstellen und Template laden
+-      const canvas = document.createElement('canvas');
+-      const ctx = canvas.getContext('2d');
+-      if (!ctx) throw new Error('Could not get canvas context');
+-
+-      // Template laden
+-      const templateImg = new Image();
+-      templateImg.crossOrigin = "anonymous";
+-      templateImg.src = `/images/templates/${templateName}`;
+-      
+-      await new Promise((resolve, reject) => {
+-        templateImg.onload = resolve;
+-        templateImg.onerror = reject;
+-      });
+-
+-      // Canvas Größe setzen und Template zeichnen
+-      canvas.width = templateImg.width;
+-      canvas.height = templateImg.height;
+-      ctx.drawImage(templateImg, 0, 0);
+-
+-      // Text Style setzen
+-      ctx.font = 'bold 24px Arial';
+-      ctx.fillStyle = '#333333';
+-
+-      // Text hinzufügen
+-      const buildingTypeText = formData.buildingType === 'house' ? 'Einfamilienhaus' : 
+-                             formData.buildingType === 'apartment4' ? 'Mehrfamilienhaus bis 4 Wohneinheiten' :
+-                             formData.buildingType === 'apartment5' ? 'Mehrfamilienhaus über 4 Wohneinheiten' :
+-                             'Nichtwohngebäude (NWG)';
+-
+-      const formattedAddress = formatAddress(formData.address);
+-      
+-      ctx.fillText(buildingTypeText, 140, 870);
+-      ctx.fillText(formattedAddress, 140, 920);
+-      ctx.fillText(`Baujahr ${formData.buildingYear}`, 140, 970);
+-
+-      // QR Code zeichnen
+-      ctx.drawImage(qrCodeImage, canvas.width - 483, canvas.height - 317, 187, 187);
+-
+-      // Klickbaren Bereich zum QR Code hinzufügen
+-      canvas.addEventListener('click', (e) => {
+-        const rect = canvas.getBoundingClientRect();
+-        const x = e.clientX - rect.left;
+-        const y = e.clientY - rect.top;
++      // Process form and send email/whatsapp
++      if (formData.contactMethod === 'email' || formData.contactMethod === 'whatsapp') {
++        // Perform necessary actions like sending admin notification
++        const buildingTypeText = formData.buildingType === 'house' ? 'Einfamilienhaus' : 
++                           formData.buildingType === 'apartment4' ? 'Mehrfamilienhaus bis 4 Wohneinheiten' :
++                           formData.buildingType === 'apartment5' ? 'Mehrfamilienhaus über 4 Wohneinheiten' :
++                           'Nichtwohngebäude (NWG)';
+         
+-        // QR Code Bereich definieren
+-        const qrLeft = canvas.width - 483;
+-        const qrTop = canvas.height - 317;
+-        const qrWidth = 187;
+-        const qrHeight = 187;
+-        
+-        // Prüfen ob der Klick im QR Code Bereich war
+-        if (x >= qrLeft && x <= qrLeft + qrWidth && 
+-            y >= qrTop && y <= qrTop + qrHeight) {
+-          window.open(fullUrl, '_blank');
+-        }
+-      });
+-
+-      // Cursor ändern wenn über QR Code
+-      canvas.style.cursor = 'pointer';
+-
+-      // PNG generieren
+-      const dataUrl = canvas.toDataURL('image/png');
+-
+-      if (formData.contactMethod === 'email') {
+-        // EmailJS Template Parameter
+-        const templateParams = {
+-          to_email: formData.email,
+-          building_type: buildingTypeText,
+-          message: formattedAddress,
+-          building_year: formData.buildingYear,
+-          payment_link: getPaymentLink(formData.buildingType)
+-        };
+-
+-        // EmailJS senden
+-        const response = await emailjs.send(
+-          process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
+-          process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!,
+-          templateParams,
+-          process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!
++        await sendAdminNotification(
++          formData.contactMethod as 'email' | 'whatsapp', 
++          formData, 
++          buildingTypeText
+         );
+ 
+-        if (response.status === 200) {
+-          // PDF generieren und herunterladen
+-          generatePDF(dataUrl, fullUrl, formData.address);
+-          await sendAdminNotification('email', formData, buildingTypeText);
+-
+-          // Zum Erfolgsstatus wechseln
+-          setFormStep('success');
+-        } else {
+-          throw new Error('Failed to send email');
+-        }
+-      } else if (formData.contactMethod === 'whatsapp') {
+-        // PDF generieren und herunterladen
+-        generatePDF(dataUrl, fullUrl, formData.address);
+-        await sendAdminNotification('whatsapp', formData, buildingTypeText);
+-
+-        // Zum Erfolgsstatus wechseln
+-        setFormStep('success');
++        // Redirect to the thank you page instead of showing in-component success state
++        const params = new URLSearchParams({
++          address: formData.address,
++          type: formData.buildingType,
++          year: formData.buildingYear,
++          method: formData.contactMethod
++        });
++        
++        router.push(`/danke?${params.toString()}`);
+       }
+     } catch (error) {
+       alert('Es gab einen Fehler. Bitte versuchen Sie es später erneut.');
+@@ -434,9 +237,9 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
+       return (
+         <div className="flex flex-col items-center justify-center space-y-6">
+           <div className="relative">
+-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary-600"></div>
++            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-green-600"></div>
+             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+-              <span className="text-primary-600 text-xl font-semibold">
++              <span className="text-green-600 text-xl font-semibold">
+                 {Math.round(progress)}%
+               </span>
+             </div>
+@@ -448,7 +251,7 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
+       )
+     }
+ 
+-    if (formStep === 'success') {
++    if (formStep === 'email') {
+       return (
+         <div>
+           <div className="text-center mb-6">
+@@ -457,48 +260,6 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
+                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+               </svg>
+             </div>
+-            <h3 className="text-2xl font-bold text-gray-900 mb-2">
+-              Vielen Dank! 🎉
+-            </h3>
+-            <p className="text-gray-600 mb-6">
+-              Ihre Proberechnung wurde erfolgreich heruntergeladen.
+-              {formData.contactMethod === 'email' 
+-                ? ' Wir haben Ihnen auch eine E-Mail mit allen Informationen gesendet.' 
+-                : ' Wir werden Ihnen alle Informationen per WhatsApp zusenden.'}
+-               Wir freuen uns auf den weiteren Austausch mit Ihnen!
+-            </p>
+-            
+-            <div className="border-t border-gray-200 pt-6 mt-6">
+-              <p className="font-medium text-gray-700 mb-4">
+-                Für besonders eilige Fälle, rufen Sie mich direkt an!
+-              </p>
+-              <p className="text-gray-600 mb-4">
+-                Ihr Stephan Grosser
+-              </p>
+-              <a 
+-                href="tel:004915206077767"
+-                className="w-full flex items-center justify-center px-8 py-4 border border-transparent text-base font-medium rounded-xl text-white bg-green-600 hover:bg-green-700 transition-colors group"
+-              >
+-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+-                </svg>
+-                <span>+49 1520 6077767</span>
+-              </a>
+-            </div>
+-          </div>
+-        </div>
+-      )
+-    }
+-
+-    if (formStep === 'email') {
+-      return (
+-        <div>
+-          <div className="text-center mb-6">
+-            <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-100 rounded-full mb-4">
+-              <svg className="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+-              </svg>
+-            </div>
+             <h3 className="text-2xl font-bold text-gray-900 mb-2">
+               Ihre Proberechnung ist fertig! 🎉
+             </h3>
+@@ -791,4 +552,4 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
+       </motion.div>
+     </div>
+   )
+-} 
+\ No newline at end of file
++}
+diff --git a/src/components/sections/Contact.tsx b/src/components/sections/Contact.tsx
+index 98bf554..4f91c45 100644
+--- a/src/components/sections/Contact.tsx
++++ b/src/components/sections/Contact.tsx
+@@ -9,7 +9,7 @@ export default function Contact() {
+             Wir sind immer für Sie da
+           </h2>
+           <p className="text-gray-600 max-w-2xl mx-auto">
+-            Persönliche Beratung und Service aus Deutschland
++            Persönliche Beratung und Service aus Bremen
+           </p>
+         </div>
+ 
+diff --git a/src/components/sections/ContactForm.tsx b/src/components/sections/ContactForm.tsx
+index 08a3676..8d8d63d 100644
+--- a/src/components/sections/ContactForm.tsx
++++ b/src/components/sections/ContactForm.tsx
+@@ -6,11 +6,11 @@ export default function ContactForm() {
+     <section id="contact-form" className="py-16 bg-gray-50">
+       <div className="text-center max-w-4xl mx-auto mb-12 px-4 sm:px-6 md:px-0">
+         <h2 className="text-4xl md:text-5xl font-bold mb-6 leading-[1.3]">
+-          <span className="text-green-600">Jetzt</span> Ihren Energieausweis bestellen und <span className="text-green-600">sogar die Mehrwertsteuer sparen</span>
++          <span className="text-green-600">Jetzt</span> Ihren Energieausweis bestellen und <span className="text-green-600">19% sparen</span>
+         </h2>
+         <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-[1.3]">
+           Über <span className="font-semibold">50.000 zufriedene Kunden</span> vertrauen auf unsere Bremer Spezial Expertise. 
+-          Mit unseren Energieausweisen bekommen Sie <span className="font-semibold">das Beste beider Welten.</span> Die Schnelligkeit eines Online-Prozesses mit der Sicherheit eines lokalen Anbieters.
++          Wir bieten Ihnen <span className="font-semibold">die Schnelligkeit eines Online-Prozesses</span> mit der Sicherheit eines lokalen Anbieters.
+         </p>
+         
+         {/* Pfeil nach unten und CTA */}
+diff --git a/src/components/sections/Footer.tsx b/src/components/sections/Footer.tsx
+index e44d9be..d7325a6 100644
+--- a/src/components/sections/Footer.tsx
++++ b/src/components/sections/Footer.tsx
+@@ -73,7 +73,7 @@ export default function Footer() {
+                 Service
+               </h3>
+               <div className="flex flex-col space-y-2">
+-                <a href="/#hero-input" className="hover:text-white transition-colors">Energieausweis beantragen</a>
++                <a href="/#contact-form" className="hover:text-white transition-colors">Energieausweis beantragen</a>
+                 <a href="/#pricing-section" className="hover:text-white transition-colors">Preise & Leistungen</a>
+                 <a href="/#faq-section" className="hover:text-white transition-colors">Häufige Fragen</a>
+                 <a href="/#contact-section" className="hover:text-white transition-colors">Kontakt</a>
+@@ -100,7 +100,7 @@ export default function Footer() {
+       {/* Copyright mit Trenner */}
+       <div className="container mx-auto px-4 mt-32">
+         <div className="max-w-7xl mx-auto text-center text-sm pt-16 mt-16 border-t border-gray-800">
+-          © 2024 Premium Energiepass® Online. Alle Rechte vorbehalten.
++          © 2025 Premium Energiepass® Online. Alle Rechte vorbehalten.
+         </div>
+       </div>
+ 
