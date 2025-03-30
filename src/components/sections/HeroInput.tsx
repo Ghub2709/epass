@@ -32,7 +32,7 @@ export default function HeroInput() {
                   <svg className="w-5 h-5 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <span className="text-gray-600">Bestpreis-Garantie</span>
+                  <span className="text-gray-600">Kundenbewertung 4,92/5</span>
                 </div>
               </div>
 
@@ -75,7 +75,7 @@ export default function HeroInput() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                         </svg>
                       </div>
-                      <span className="font-medium text-gray-800">Schnelle Erstellung - 24 Stunden</span>
+                      <span className="font-medium text-gray-800"><b>Online-Effizienz:</b> Einfache Bestellung, Express-Bearbeitung in 24h</span>
                     </li>
                     
                     <li className="flex items-center gap-3">
@@ -84,7 +84,7 @@ export default function HeroInput() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
                         </svg>
                       </div>
-                      <span className="font-medium text-gray-800">Persönliche Beratung - kostenlos inklusive</span>
+                      <span className="font-medium text-gray-800"><b>Lokaler Service:</b> Auf Wunsch Kostenlose Vor-Ort Datenaufnahme</span>
                     </li>
                     
                     <li className="flex items-center gap-3">
@@ -94,12 +94,12 @@ export default function HeroInput() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
                       </div>
-                      <span className="font-medium text-gray-800">Vor-Ort-Service - exklusiv für Bremer und Bremerinnen</span>
+                      <span className="font-medium text-gray-800"><b>Garantierte Sicherheit:</b> 100% amtlich anerkannt und beim DIBt registriert</span>
                     </li>
                   </ul>
                   
                   {/* CTA Button */}
-                  <div className="mt-8">
+                  <div className="mt-8 flex flex-col items-center">
                     <button 
                       onClick={() => document.getElementById('contact-form')?.scrollIntoView({ behavior: 'smooth' })}
                       className="inline-flex items-center justify-center px-8 py-4 
@@ -108,7 +108,7 @@ export default function HeroInput() {
                         rounded-lg shadow-lg hover:shadow-xl
                         transform transition-all duration-300 hover:-translate-y-1"
                     >
-                      <span>Proberechnung Sofort Starten</span>
+                      <span>Kostenlose Proberechnung Starten</span>
                       <svg 
                         className="ml-2 w-5 h-5 animate-pulse" 
                         fill="none" 
@@ -118,6 +118,11 @@ export default function HeroInput() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                       </svg>
                     </button>
+                    
+                    {/* Kundenbewertungen */}
+                    <div className="mt-3 text-center text-gray-600 text-sm">
+                      ⭐️ 4.9/5 von über 2.000 Kunden | ✓ 50.000+ Ausweise
+                    </div>
                   </div>
                 </div>
               </div>

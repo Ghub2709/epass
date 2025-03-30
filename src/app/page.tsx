@@ -5,7 +5,7 @@ import Process from '@/components/sections/Process'
 import Pricing from '@/components/sections/Pricing'
 import Trust from '@/components/sections/Trust'
 import ContactForm from '@/components/sections/ContactForm'
-import FAQ from '@/components/sections/FAQ'
+import OptimizedFAQ from '@/components/sections/OptimizedFAQ'
 import Contact from '@/components/sections/Contact'
 import Footer from '@/components/sections/Footer'
 
@@ -19,7 +19,7 @@ export default function Home() {
       <Pricing />
       <Trust />
       <ContactForm />
-      <FAQ />
+      <OptimizedFAQ />
       <Contact />
       <Footer />
     </main>
