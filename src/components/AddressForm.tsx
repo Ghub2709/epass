@@ -708,7 +708,7 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3 }}
               >
-                <span className="font-semibold">{orderCount} Personen</span> haben heute bereits bestellt
+                <span className="font-semibold">{orderCount} Interessenten</span> haben heute eine Proberechnung erstellt
               </motion.p>
             </div>
           </div>
