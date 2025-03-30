@@ -191,10 +191,46 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
   useEffect(() => {
     const handleFocus = () => {
       if (!window.google) {
-        console.error('Google Maps API not loaded');
+        // Lazy-load Google Maps API nur wenn der Benutzer mit dem Feld interagiert
+        const loadGoogleMapsApi = () => {
+          const script = document.createElement('script');
+          script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`;
+          script.async = true;
+          script.defer = true;
+          
+          script.onload = () => {
+            if (addressInputRef.current) {
+              try {
+                const autocomplete = new google.maps.places.Autocomplete(addressInputRef.current, {
+                  types: ['address'],
+                  componentRestrictions: { country: 'de' },
+                  fields: ['formatted_address', 'address_components'],
+                });
+    
+                autocomplete.addListener('place_changed', () => {
+                  const place = autocomplete.getPlace();
+                  const formattedAddress = place?.formatted_address || '';
+                  setFormData(prev => ({ ...prev, address: formattedAddress }));
+                  setIsAddressValidated(true);
+                });
+              } catch (error) {
+                console.error('Error initializing Google Places Autocomplete:', error);
+              }
+            }
+          };
+          
+          script.onerror = () => {
+            console.error('Failed to load Google Maps API');
+          };
+          
+          document.head.appendChild(script);
+        };
+        
+        loadGoogleMapsApi();
         return;
       }
 
+      // Falls Google Maps API bereits geladen ist
       if (addressInputRef.current) {
         try {
           const autocomplete = new google.maps.places.Autocomplete(addressInputRef.current, {

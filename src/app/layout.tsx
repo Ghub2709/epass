@@ -13,27 +13,8 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  useEffect(() => {
-    if (!document.getElementById('google-maps-script')) {
-      const loader = new Promise<void>((resolve) => {
-        const script = document.createElement('script')
-        script.id = 'google-maps-script'
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places&loading=async`
-        script.async = true
-        
-        script.onload = () => {
-          console.log('Google Maps API loaded successfully');
-          resolve();
-        }
-
-        script.onerror = (error) => {
-          console.error('Error loading Google Maps API:', error);
-        }
-
-        document.head.appendChild(script)
-      });
-    }
-  }, [])
+  // Google Maps API wird jetzt nur bei Bedarf geladen
+  // Kein useEffect mehr zum automatischen Laden der API
 
   useEffect(() => {
     const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY;
