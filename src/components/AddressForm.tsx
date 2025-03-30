@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, useAnimationControls } from 'framer-motion'
 import emailjs from '@emailjs/browser'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import QRCode from 'qrcode'
 import jsPDF from 'jspdf';
 
@@ -33,7 +33,8 @@ const sendAdminNotification = async (
     buildingType: string,
     buildingYear: string,
     email?: string,
-    phone?: string
+    phone?: string,
+    gclid?: string
   },
   buildingTypeText: string
 ) => {
@@ -47,7 +48,8 @@ const sendAdminNotification = async (
       user_email: formData.email || 'Keine E-Mail angegeben',
       user_phone: action === 'whatsapp' ? (formData.phone || 'Nicht angegeben') : 'Nicht relevant (E-Mail Versand)', 
       timestamp: new Date().toLocaleString('de-DE'),
-      payment_link: getPaymentLink(formData.buildingType)
+      payment_link: getPaymentLink(formData.buildingType),
+      gclid: formData.gclid || 'Keine Google Ads CID vorhanden'
     };
 
     await emailjs.send(
@@ -125,6 +127,7 @@ const generatePDF = async (dataUrl: string, fullUrl: string, formattedAddress: s
 
 export default function AddressForm({ className = "", isHeroVariant = false }: AddressFormProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [formStep, setFormStep] = useState<'initial' | 'loading' | 'email'>('initial')
   const [formData, setFormData] = useState({
     address: '',
@@ -132,7 +135,8 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
     buildingType: 'house',
     contactMethod: '', // 'email' or 'whatsapp'
     email: '',
-    phone: ''
+    phone: '',
+    gclid: ''
   })
   const [progress, setProgress] = useState(0)
   const [visibleAvatars, setVisibleAvatars] = useState(4);
@@ -222,6 +226,22 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
       }
     };
   }, []);
+
+  // Erfassen der gclid von Google Ads aus der URL
+  useEffect(() => {
+    const gclid = searchParams?.get('gclid');
+    if (gclid) {
+      setFormData(prev => ({ ...prev, gclid }));
+      // Speichere gclid im sessionStorage für spätere Verwendung
+      sessionStorage.setItem('gclid', gclid);
+    } else {
+      // Versuche, gclid aus sessionStorage zu holen, falls vorhanden
+      const storedGclid = sessionStorage.getItem('gclid');
+      if (storedGclid) {
+        setFormData(prev => ({ ...prev, gclid: storedGclid }));
+      }
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -372,6 +392,11 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
             method: formData.contactMethod
           });
           
+          // Füge gclid hinzu, wenn vorhanden
+          if (formData.gclid) {
+            redirectParams.append('gclid', formData.gclid);
+          }
+          
           router.push(`/danke?${redirectParams.toString()}`);
         } else {
           throw new Error('Failed to send email');
@@ -388,6 +413,11 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
           year: formData.buildingYear,
           method: formData.contactMethod
         });
+        
+        // Füge gclid hinzu, wenn vorhanden
+        if (formData.gclid) {
+          redirectParams.append('gclid', formData.gclid);
+        }
         
         router.push(`/danke?${redirectParams.toString()}`);
       }
