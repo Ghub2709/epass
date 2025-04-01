@@ -776,6 +776,18 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
               >
                 <span className="font-semibold">{orderCount} Interessenten</span> haben heute eine Proberechnung erstellt
               </motion.p>
+              
+              {/* Google Rezensionen Banner */}
+              <div className="mt-3">
+                <img 
+                  src="/images/2000+ Google Rezensionen.svg" 
+                  alt="Über 2000 Google Rezensionen" 
+                  className="max-w-full h-auto"
+                  width={200}
+                  height={40}
+                  loading="lazy" // Verzögertes Laden für bessere Performance
+                />
+              </div>
             </div>
           </div>
         </div>

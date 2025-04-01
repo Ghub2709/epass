@@ -278,6 +278,18 @@ export default function DankePage() {
                         <p className="mt-5 text-sm text-gray-500">
                           19% Rabatt wird beim Checkout mit Code "MWSTGESCHENKT" automatisch angewendet
                         </p>
+                        
+                        {/* Google Rezensionen Banner */}
+                        <div className="mt-5 flex justify-center">
+                          <img 
+                            src="/images/2000+ Google Rezensionen.svg" 
+                            alt="Über 2000 Google Rezensionen" 
+                            className="max-w-full h-auto"
+                            width={220}
+                            height={45}
+                            loading="lazy"
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
