@@ -129,23 +129,23 @@ const generatePDF = async (dataUrl: string, fullUrl: string, formattedAddress: s
   
   // Toolbar mit Buttons
   const toolbar = document.createElement('div');
-  toolbar.className = 'flex justify-between items-center p-4 border-b';
+  toolbar.className = 'flex flex-col sm:flex-row justify-between items-center p-4 border-b gap-3';
   
   // Titel
   const title = document.createElement('h3');
-  title.className = 'text-lg font-semibold text-gray-800';
+  title.className = 'text-lg font-semibold text-gray-800 text-center sm:text-left';
   title.textContent = 'Ihre Proberechnung';
   
   // Button-Container
   const buttonContainer = document.createElement('div');
-  buttonContainer.className = 'flex gap-2';
+  buttonContainer.className = 'flex gap-2 w-full sm:w-auto justify-center sm:justify-end';
   
   // Download-Button
   const downloadButton = document.createElement('button');
-  downloadButton.className = 'bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded flex items-center gap-2 transition-colors';
+  downloadButton.className = 'bg-green-600 hover:bg-green-700 text-white px-3 py-2 sm:px-4 sm:py-2 rounded flex items-center gap-1 sm:gap-2 transition-colors text-sm sm:text-base flex-grow sm:flex-grow-0 justify-center';
   
   // Download-Icon
-  downloadButton.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  downloadButton.innerHTML = `<svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
   </svg><span>PDF Herunterladen</span>`;
   
@@ -158,10 +158,10 @@ const generatePDF = async (dataUrl: string, fullUrl: string, formattedAddress: s
   
   // Schließen-Button
   const closeButton = document.createElement('button');
-  closeButton.className = 'bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded flex items-center gap-2 transition-colors';
+  closeButton.className = 'bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 py-2 sm:px-4 sm:py-2 rounded flex items-center gap-1 sm:gap-2 transition-colors text-sm sm:text-base flex-grow sm:flex-grow-0 justify-center';
   
   // Schließen-Icon
-  closeButton.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  closeButton.innerHTML = `<svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
   </svg><span>Schließen</span>`;
   
@@ -187,8 +187,8 @@ const generatePDF = async (dataUrl: string, fullUrl: string, formattedAddress: s
   
   // Link-Hinweis
   const linkHint = document.createElement('div');
-  linkHint.className = 'absolute bottom-4 right-4 bg-white bg-opacity-75 px-2 py-1 rounded text-sm text-gray-600';
-  linkHint.innerHTML = 'Klicken Sie auf das Bild, um direkt zur Bestellung zu gelangen';
+  linkHint.className = 'fixed bottom-4 right-4 bg-white bg-opacity-90 px-2 py-1 rounded text-xs sm:text-sm text-gray-600 shadow max-w-[200px] sm:max-w-none';
+  linkHint.innerHTML = 'Klicken Sie auf das Bild, um zur Bestellung zu gelangen';
   
   // Zusammenbauen der Elemente
   buttonContainer.appendChild(downloadButton);
