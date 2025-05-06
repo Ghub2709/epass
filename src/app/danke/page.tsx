@@ -158,11 +158,11 @@ export default function DankePage() {
                 <p className="text-lg text-gray-700">
                   {contactMethod === 'email' ? (
                     <>
-                      Ihre Proberechnung wurde an Ihre E-Mail gesendet und auf Ihren Rechner heruntergeladen.
+                      Ihre Proberechnung wurde an Ihre E-Mail gesendet und als PDF für Sie angezeigt.
                     </>
                   ) : (
                     <>
-                      Ihre Proberechnung erhalten Sie in Kürze per WhatsApp auf Ihr Smartphone.
+                      Ihre Proberechnung erhalten Sie in Kürze per WhatsApp auf Ihr Smartphone und wurde als PDF für Sie angezeigt.
                     </>
                   )}
                 </p>

@@ -118,11 +118,111 @@ const generatePDF = async (dataUrl: string, fullUrl: string, formattedAddress: s
   // PDF generieren
   const pdfOutput = pdf.output('datauristring');
   
-  // Download auslösen
-  const link = document.createElement('a');
-  link.download = formatFileName(formattedAddress).replace('.png', '.pdf');
-  link.href = pdfOutput;
-  link.click();
+  // PDF-Viewer in einem Modal auf der Seite anzeigen
+  const pdfViewerModal = document.createElement('div');
+  pdfViewerModal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4';
+  pdfViewerModal.style.zIndex = '9999';
+  
+  // Container für das Bild und Schließen/Download-Buttons
+  const modalContent = document.createElement('div');
+  modalContent.className = 'bg-white rounded-lg shadow-xl max-w-5xl w-full flex flex-col h-[90vh] relative';
+  
+  // Toolbar mit Buttons
+  const toolbar = document.createElement('div');
+  toolbar.className = 'flex justify-between items-center p-4 border-b';
+  
+  // Titel
+  const title = document.createElement('h3');
+  title.className = 'text-lg font-semibold text-gray-800';
+  title.textContent = 'Ihre Proberechnung';
+  
+  // Button-Container
+  const buttonContainer = document.createElement('div');
+  buttonContainer.className = 'flex gap-2';
+  
+  // Download-Button
+  const downloadButton = document.createElement('button');
+  downloadButton.className = 'bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded flex items-center gap-2 transition-colors';
+  
+  // Download-Icon
+  downloadButton.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+  </svg><span>PDF Herunterladen</span>`;
+  
+  downloadButton.onclick = () => {
+    const link = document.createElement('a');
+    link.download = formatFileName(formattedAddress).replace('.png', '.pdf');
+    link.href = pdfOutput;
+    link.click();
+  };
+  
+  // Schließen-Button
+  const closeButton = document.createElement('button');
+  closeButton.className = 'bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded flex items-center gap-2 transition-colors';
+  
+  // Schließen-Icon
+  closeButton.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+  </svg><span>Schließen</span>`;
+  
+  closeButton.onclick = () => {
+    document.body.removeChild(pdfViewerModal);
+  };
+  
+  // Bildcontainer
+  const imageContainer = document.createElement('div');
+  imageContainer.className = 'w-full flex-grow overflow-auto flex items-start justify-center p-4';
+  
+  // Bild anzeigen (statt PDF im iframe)
+  const imageElement = document.createElement('img');
+  imageElement.src = dataUrl;
+  imageElement.className = 'max-w-full h-auto shadow-lg border border-gray-200';
+  imageElement.alt = 'Ihre Proberechnung';
+  
+  // Bild klickbar machen, um zum Zahlungslink zu navigieren
+  imageElement.style.cursor = 'pointer';
+  imageElement.onclick = () => {
+    window.open(fullUrl, '_blank');
+  };
+  
+  // Link-Hinweis
+  const linkHint = document.createElement('div');
+  linkHint.className = 'absolute bottom-4 right-4 bg-white bg-opacity-75 px-2 py-1 rounded text-sm text-gray-600';
+  linkHint.innerHTML = 'Klicken Sie auf das Bild, um direkt zur Bestellung zu gelangen';
+  
+  // Zusammenbauen der Elemente
+  buttonContainer.appendChild(downloadButton);
+  buttonContainer.appendChild(closeButton);
+  toolbar.appendChild(title);
+  toolbar.appendChild(buttonContainer);
+  modalContent.appendChild(toolbar);
+  imageContainer.appendChild(imageElement);
+  modalContent.appendChild(imageContainer);
+  modalContent.appendChild(linkHint);
+  pdfViewerModal.appendChild(modalContent);
+  
+  // Modal zur Seite hinzufügen
+  document.body.appendChild(pdfViewerModal);
+  
+  // Tastendruck-Event für ESC-Taste
+  const handleKeyDown = (event: KeyboardEvent) => {
+    if (event.key === 'Escape') {
+      document.body.removeChild(pdfViewerModal);
+      document.removeEventListener('keydown', handleKeyDown);
+    }
+  };
+  
+  document.addEventListener('keydown', handleKeyDown);
+  
+  // Klick außerhalb des Modals schließt es
+  pdfViewerModal.addEventListener('click', (event) => {
+    if (event.target === pdfViewerModal) {
+      document.body.removeChild(pdfViewerModal);
+      document.removeEventListener('keydown', handleKeyDown);
+    }
+  });
+  
+  return pdfOutput; // Wir geben die PDF-Daten zurück, damit sie in der handleEmailSubmit-Funktion verwendet werden können
 };
 
 export default function AddressForm({ className = "", isHeroVariant = false }: AddressFormProps) {
@@ -416,7 +516,7 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
         );
 
         if (response.status === 200) {
-          // PDF generieren und herunterladen
+          // PDF generieren und in neuem Tab öffnen
           await generatePDF(dataUrl, fullUrl, formData.address);
           await sendAdminNotification('email', formData, buildingTypeText);
 
@@ -438,7 +538,7 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
           throw new Error('Failed to send email');
         }
       } else if (formData.contactMethod === 'whatsapp') {
-        // PDF generieren und herunterladen
+        // PDF generieren und in neuem Tab öffnen
         await generatePDF(dataUrl, fullUrl, formData.address);
         await sendAdminNotification('whatsapp', formData, buildingTypeText);
 
