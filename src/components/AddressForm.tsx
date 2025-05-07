@@ -6,6 +6,7 @@ import emailjs from '@emailjs/browser'
 import { useRouter, useSearchParams } from 'next/navigation'
 import QRCode from 'qrcode'
 import jsPDF from 'jspdf';
+import Select from 'react-select'
 
 interface AddressFormProps {
   className?: string;
@@ -225,73 +226,47 @@ const generatePDF = async (dataUrl: string, fullUrl: string, formattedAddress: s
   return pdfOutput; // Wir geben die PDF-Daten zurück, damit sie in der handleEmailSubmit-Funktion verwendet werden können
 };
 
+// EmailJS einmalig initialisieren
+emailjs.init(process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!);
+
 export default function AddressForm({ className = "", isHeroVariant = false }: AddressFormProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const [formStep, setFormStep] = useState<'initial' | 'loading' | 'email'>('initial')
+  const searchParams = useSearchParams()!;
+  const [formStep, setFormStep] = useState<'address' | 'loading' | 'email'>('address');
   const [formData, setFormData] = useState({
     address: '',
-    buildingYear: '',
     buildingType: 'house',
-    contactMethod: '', // 'email' or 'whatsapp'
+    buildingYear: '',
     email: '',
     phone: '',
-    gclid: ''
-  })
-  const [progress, setProgress] = useState(0)
+    contactMethod: '',
+    gclid: searchParams.get('gclid') || ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const controls = useAnimationControls();
+  const formRef = useRef<HTMLFormElement>(null);
+  const [isAddressValidated, setIsAddressValidated] = useState(false);
+  const addressInputRef = useRef<HTMLInputElement>(null);
+  const [progress, setProgress] = useState(0);
   const [visibleAvatars, setVisibleAvatars] = useState(4);
   const [orderCount, setOrderCount] = useState(23);
-  const controls = useAnimationControls()
-  const [isInteracting, setIsInteracting] = useState(false)
-  const addressInputRef = useRef<HTMLInputElement | null>(null);
-  const [isAddressValidated, setIsAddressValidated] = useState(false);
+  const [isInteracting, setIsInteracting] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
 
-  useEffect(() => {
-    if (!hasInteracted && formStep === 'initial') {
-      controls.start({
-        y: [0, -20, 0],
-        transition: {
-          duration: 4,
-          ease: "easeInOut",
-          repeat: Infinity,
-        }
-      })
-    } else {
-      controls.stop()
-      controls.set({ y: 0 })
-    }
-  }, [formStep, controls, hasInteracted])
+  // Building type options for react-select
+  const buildingTypeOptions = [
+    { value: 'house', label: 'Einfamilienhaus' },
+    { value: 'apartment4', label: 'Mehrfamilienhaus bis 4 Wohneinheiten' },
+    { value: 'apartment5', label: 'Mehrfamilienhaus über 4 Wohneinheiten' },
+    { value: 'commercial', label: 'Nichtwohngebäude (NWG)' }
+  ];
 
-  useEffect(() => {
-    if (formStep === 'loading') {
-      const duration = 5000
-      const interval = 50
-      const steps = duration / interval
-      const increment = 100 / steps
-
-      const timer = setInterval(() => {
-        setProgress(prev => {
-          const next = Math.min(prev + increment, 100)
-          if (next >= 100) {
-            clearInterval(timer)
-          }
-          return next
-        })
-      }, interval)
-
-      return () => {
-        clearInterval(timer)
-        setProgress(0)
-      }
-    }
-  }, [formStep])
-
-  // Initialize Google Places Autocomplete
+  // Google Places Autocomplete initialization
   useEffect(() => {
     const handleFocus = () => {
       if (!window.google) {
-        // Lazy-load Google Maps API nur wenn der Benutzer mit dem Feld interagiert
+        // Lazy-load Google Maps API only when user interacts with the field
         const loadGoogleMapsApi = () => {
           const script = document.createElement('script');
           script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`;
@@ -330,7 +305,7 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
         return;
       }
 
-      // Falls Google Maps API bereits geladen ist
+      // If Google Maps API is already loaded
       if (addressInputRef.current) {
         try {
           const autocomplete = new google.maps.places.Autocomplete(addressInputRef.current, {
@@ -363,21 +338,57 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
     };
   }, []);
 
-  // Erfassen der gclid von Google Ads aus der URL
+  // Animation effect
   useEffect(() => {
-    const gclid = searchParams?.get('gclid');
-    if (gclid) {
-      setFormData(prev => ({ ...prev, gclid }));
-      // Speichere gclid im sessionStorage für spätere Verwendung
-      sessionStorage.setItem('gclid', gclid);
+    if (!hasInteracted && formStep === 'address') {
+      controls.start({
+        y: [0, -20, 0],
+        transition: {
+          duration: 4,
+          ease: "easeInOut",
+          repeat: Infinity,
+        }
+      });
     } else {
-      // Versuche, gclid aus sessionStorage zu holen, falls vorhanden
-      const storedGclid = sessionStorage.getItem('gclid');
-      if (storedGclid) {
-        setFormData(prev => ({ ...prev, gclid: storedGclid }));
-      }
+      controls.stop();
+      controls.set({ y: 0 });
     }
-  }, [searchParams]);
+  }, [formStep, controls, hasInteracted]);
+
+  // Progress bar animation for loading step
+  useEffect(() => {
+    if (formStep === 'loading') {
+      const duration = 5000; // 5 seconds
+      const interval = 50;
+      const steps = duration / interval;
+      const increment = 100 / steps;
+
+      const timer = setInterval(() => {
+        setProgress(prev => {
+          const next = Math.min(prev + increment, 100);
+          if (next >= 100) {
+            clearInterval(timer);
+            setFormStep('email');
+          }
+          return next;
+        });
+      }, interval);
+
+      return () => {
+        clearInterval(timer);
+        setProgress(0);
+      };
+    }
+  }, [formStep]);
+
+  // Adresse formatieren
+  const formatAddress = (fullAddress: string) => {
+    const parts = fullAddress.split(',');
+    const street = parts[0].trim();
+    const city = parts[1]?.trim().split(' ').pop() || '';
+    
+    return city ? `${street} in ${city}` : street;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -401,17 +412,8 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
       return;
     }
 
+    // Set loading state and show animation
     setFormStep('loading');
-    setTimeout(() => setFormStep('email'), 5000);
-  }
-
-  // Format address
-  const formatAddress = (fullAddress: string) => {
-    const parts = fullAddress.split(',');
-    const street = parts[0].trim();
-    const city = parts[1]?.trim().split(' ').pop() || '';
-    
-    return city ? `${street} in ${city}` : street;
   };
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
@@ -424,141 +426,71 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
     }
     
     try {
-      // Template basierend auf Baujahr auswählen
-      const year = parseInt(formData.buildingYear);
-      let templateName = '';
-      
-      if (year <= 1959) {
-        templateName = '1900-1959.png';
-      } else if (year >= 1960 && year <= 1975) {
-        templateName = '1960-1975.png';
-      } else if (year >= 1976 && year <= 1990) {
-        templateName = '1976-1990.png';
-      } else {
-        templateName = '1991-2024.png';
-      }
+      setIsSubmitting(true);
+      setError('');
 
-      // Payment Link und QR Code generieren
-      const paymentLink = getPaymentLink(formData.buildingType);
-      const params = new URLSearchParams({
-        address: formData.address,
-        type: formData.buildingType,
-        year: formData.buildingYear
-      });
-      const fullUrl = `${paymentLink}&${params.toString()}`;
-      
-      // QR Code generieren
-      const qrCodeDataUrl = await QRCode.toDataURL(fullUrl);
-      const qrCodeImage = new Image();
-      qrCodeImage.src = qrCodeDataUrl;
-      await new Promise((resolve) => {
-        qrCodeImage.onload = resolve;
-      });
+      // Process form and send email/whatsapp
+      if (formData.contactMethod === 'email' || formData.contactMethod === 'whatsapp') {
+        // Get building type text for better readability
+        const buildingTypeText = formData.buildingType === 'house' ? 'Einfamilienhaus' : 
+                         formData.buildingType === 'apartment4' ? 'Mehrfamilienhaus bis 4 Wohneinheiten' :
+                         formData.buildingType === 'apartment5' ? 'Mehrfamilienhaus über 4 Wohneinheiten' :
+                         'Nichtwohngebäude (NWG)';
+        
+        // Send email to customer if email contact method is selected
+        if (formData.contactMethod === 'email') {
+          // Format address for better readability
+          const formattedAddress = formatAddress(formData.address);
+          
+          // EmailJS Template Parameter for customer email
+          const templateParams = {
+            to_email: formData.email,
+            building_type: buildingTypeText,
+            message: formattedAddress,
+            building_year: formData.buildingYear,
+            payment_link: getPaymentLink(formData.buildingType)
+          };
 
-      // Canvas erstellen und Template laden
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      if (!ctx) throw new Error('Could not get canvas context');
+          // Send email to customer
+          const response = await emailjs.send(
+            process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
+            process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!,
+            templateParams,
+            process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!
+          );
 
-      // Template laden
-      const templateImg = new Image();
-      templateImg.crossOrigin = "anonymous";
-      templateImg.src = `/images/templates/${templateName}`;
-      
-      await new Promise((resolve, reject) => {
-        templateImg.onload = resolve;
-        templateImg.onerror = reject;
-      });
-
-      // Canvas Größe setzen und Template zeichnen
-      canvas.width = templateImg.width;
-      canvas.height = templateImg.height;
-      ctx.drawImage(templateImg, 0, 0);
-
-      // Text Style setzen
-      ctx.font = 'bold 24px Arial';
-      ctx.fillStyle = '#333333';
-
-      // Text hinzufügen
-      const buildingTypeText = formData.buildingType === 'house' ? 'Einfamilienhaus' : 
-                             formData.buildingType === 'apartment4' ? 'Mehrfamilienhaus bis 4 Wohneinheiten' :
-                             formData.buildingType === 'apartment5' ? 'Mehrfamilienhaus über 4 Wohneinheiten' :
-                             'Nichtwohngebäude (NWG)';
-
-      const formattedAddress = formatAddress(formData.address);
-      
-      ctx.fillText(buildingTypeText, 140, 870);
-      ctx.fillText(formattedAddress, 140, 920);
-      ctx.fillText(`Baujahr ${formData.buildingYear}`, 140, 970);
-
-      // QR Code zeichnen
-      ctx.drawImage(qrCodeImage, canvas.width - 483, canvas.height - 317, 187, 187);
-
-      // PNG generieren
-      const dataUrl = canvas.toDataURL('image/png');
-
-      if (formData.contactMethod === 'email') {
-        // EmailJS Template Parameter
-        const templateParams = {
-          to_email: formData.email,
-          building_type: buildingTypeText,
-          message: formattedAddress,
-          building_year: formData.buildingYear,
-          payment_link: getPaymentLink(formData.buildingType)
-        };
-
-        // EmailJS senden
-        const response = await emailjs.send(
-          process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
-          process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!,
-          templateParams,
-          process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!
+          if (response.status !== 200) {
+            throw new Error('Failed to send email to customer');
+          }
+        }
+        
+        // Send notification to admin
+        await sendAdminNotification(
+          formData.contactMethod as 'email' | 'whatsapp', 
+          formData, 
+          buildingTypeText
         );
 
-        if (response.status === 200) {
-          // PDF generieren und in neuem Tab öffnen
-          await generatePDF(dataUrl, fullUrl, formData.address);
-          await sendAdminNotification('email', formData, buildingTypeText);
-
-          // Nach erfolgreicher PDF-Generierung und Email-Versand zur Danke-Seite weiterleiten
-          const redirectParams = new URLSearchParams({
-            address: formData.address,
-            type: formData.buildingType,
-            year: formData.buildingYear,
-            method: formData.contactMethod
-          });
-          
-          // Füge gclid hinzu, wenn vorhanden
-          if (formData.gclid) {
-            redirectParams.append('gclid', formData.gclid);
-          }
-          
-          router.push(`/danke?${redirectParams.toString()}`);
-        } else {
-          throw new Error('Failed to send email');
-        }
-      } else if (formData.contactMethod === 'whatsapp') {
-        // PDF generieren und in neuem Tab öffnen
-        await generatePDF(dataUrl, fullUrl, formData.address);
-        await sendAdminNotification('whatsapp', formData, buildingTypeText);
-
-        // Nach erfolgreicher PDF-Generierung und Admin-Benachrichtigung zur Danke-Seite weiterleiten
-        const redirectParams = new URLSearchParams({
+        // Redirect to the thank you page
+        const params = new URLSearchParams({
           address: formData.address,
           type: formData.buildingType,
           year: formData.buildingYear,
           method: formData.contactMethod
         });
         
-        // Füge gclid hinzu, wenn vorhanden
+        // Add gclid if present
         if (formData.gclid) {
-          redirectParams.append('gclid', formData.gclid);
+          params.append('gclid', formData.gclid);
         }
         
-        router.push(`/danke?${redirectParams.toString()}`);
+        router.push(`/danke?${params.toString()}`);
       }
     } catch (error) {
-      alert('Es gab einen Fehler. Bitte versuchen Sie es später erneut.');
+      console.error('Error submitting form:', error);
+      setError('Es gab einen Fehler. Bitte versuchen Sie es später erneut.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -566,19 +498,21 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
     if (formStep === 'loading') {
       return (
         <div className="flex flex-col items-center justify-center space-y-6">
-          <div className="relative">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-green-600"></div>
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-              <span className="text-green-600 text-xl font-semibold">
+          <div className="w-full bg-gray-100 rounded-full h-6 mb-2">
+            <div 
+              className="bg-green-600 h-6 rounded-full transition-all duration-200 flex items-center justify-center"
+              style={{ width: `${progress}%` }}
+            >
+              <span className="text-white text-sm font-medium">
                 {Math.round(progress)}%
               </span>
             </div>
           </div>
           <p className="text-gray-600 text-center text-lg">
-            Wir prüfen Ihre Eingaben und erstellen Ihre Proberechnung ...
+            Wir prüfen Ihre Eingaben und erstellen Ihre Proberechnung...
           </p>
         </div>
-      )
+      );
     }
 
     if (formStep === 'email') {
@@ -598,9 +532,10 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
             </p>
           </div>
 
-          {!formData.contactMethod ? (
+          {!formData.contactMethod || formData.contactMethod === '' ? (
             <div className="space-y-4">
               <button
+                type="button"
                 onClick={() => setFormData(prev => ({ ...prev, contactMethod: 'email' }))}
                 className="w-full flex items-center justify-between px-6 py-4 bg-white border-2 border-gray-200 rounded-xl hover:border-green-500 hover:shadow-lg transition-all duration-300 group"
               >
@@ -616,6 +551,7 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
               </button>
 
               <button
+                type="button"
                 onClick={() => setFormData(prev => ({ ...prev, contactMethod: 'whatsapp' }))}
                 className="w-full flex items-center justify-between px-6 py-4 bg-white border-2 border-gray-200 rounded-xl hover:border-green-500 hover:shadow-lg transition-all duration-300 group"
               >
@@ -656,6 +592,7 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
               </div>
 
               <button
+                type="button"
                 onClick={handleEmailSubmit}
                 className="w-full flex items-center justify-center px-8 py-4 border border-transparent text-base font-medium rounded-xl text-white bg-green-600 hover:bg-green-700 transition-colors group"
               >
@@ -680,9 +617,10 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
             </div>
           )}
         </div>
-      )
+      );
     }
 
+    // Default view (address form)
     return (
       <div className="space-y-6">
         <div className="space-y-4">
@@ -732,35 +670,65 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
           </div>
 
           <div className="relative group z-10">
-            <select
+            <Select
+              placeholder="-- Gebäudetyp wählen --"
+              options={buildingTypeOptions}
+              value={buildingTypeOptions.find(option => option.value === formData.buildingType) || null}
+              onChange={(selectedOption) => {
+                if (selectedOption) {
+                  setFormData({ ...formData, buildingType: selectedOption.value });
+                }
+              }}
+              className="react-select-container"
+              classNamePrefix="react-select"
+              styles={{
+                control: (baseStyles, state) => ({
+                  ...baseStyles,
+                  borderRadius: '0.75rem',
+                  borderWidth: '2px',
+                  borderColor: state.isFocused ? '#22c55e' : '#e5e7eb',
+                  boxShadow: state.isFocused ? '0 0 0 1px #22c55e' : 'none',
+                  '&:hover': {
+                    borderColor: '#86efac',
+                    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                    transform: 'translateY(-2px)'
+                  },
+                  padding: '0.375rem',
+                  transition: 'all 0.3s ease',
+                }),
+                option: (baseStyles, state) => ({
+                  ...baseStyles,
+                  backgroundColor: state.isSelected ? '#22c55e' : state.isFocused ? '#dcfce7' : 'white',
+                  color: state.isSelected ? 'white' : '#374151',
+                  '&:hover': {
+                    backgroundColor: state.isSelected ? '#16a34a' : '#dcfce7',
+                  },
+                  cursor: 'pointer',
+                  padding: '0.75rem 1rem',
+                }),
+                menu: (baseStyles) => ({
+                  ...baseStyles,
+                  borderRadius: '0.75rem',
+                  overflow: 'hidden',
+                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                }),
+                placeholder: (baseStyles) => ({
+                  ...baseStyles,
+                  color: '#9ca3af',
+                }),
+                singleValue: (baseStyles) => ({
+                  ...baseStyles,
+                  color: '#374151',
+                }),
+              }}
               required
-              className="block w-full px-4 py-3 rounded-xl border-2 border-gray-200 
-                focus:ring-2 focus:ring-green-500 focus:border-transparent
-                transition-all duration-300 
-                hover:border-green-300 hover:shadow-lg
-                group-hover:translate-y-[-2px]
-                appearance-none cursor-pointer
-                relative z-20"
-              value={formData.buildingType}
-              onChange={(e) => setFormData({ ...formData, buildingType: e.target.value })}
-            >
-              <option value="house">Einfamilienhaus</option>
-              <option value="apartment4">Mehrfamilienhaus bis 4 Wohneinheiten</option>
-              <option value="apartment5">Mehrfamilienhaus über 4 Wohneinheiten</option>
-              <option value="commercial">Nichtwohngebäude (NWG)</option>
-            </select>
-            <div className="absolute inset-0 bg-green-50 opacity-0 group-hover:opacity-10 rounded-xl transition-opacity duration-300 z-10" />
-            <div className="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none
-              transition-transform duration-300 group-hover:translate-x-1 z-20">
-              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </div>
+            />
           </div>
         </div>
 
         <button
           type="submit"
+          disabled={!formData.address || !formData.buildingYear || !formData.buildingType}
           className="w-full flex items-center justify-center px-8 py-4 
             border border-transparent text-base font-medium rounded-xl 
             text-white bg-green-600 relative overflow-hidden
@@ -785,8 +753,8 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
           </div>
         </button>
       </div>
-    )
-  }
+    );
+  };
 
   const avatars = [
     '/images/avatars/avatar1.jpeg',
@@ -825,18 +793,14 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
             <div className="flex justify-between text-sm text-green-800 mb-2">
               <span>Fortschritt</span>
               <span>
-                {formStep === 'initial' ? '0%' : 
-                 formStep === 'loading' ? `${Math.round(progress)}%` : 
-                 '96%'}
+                {formStep === 'address' ? '0%' : '96%'}
               </span>
             </div>
             <div className="h-2 bg-green-100 rounded-full">
               <div 
                 className="h-2 bg-green-600 rounded-full transition-all duration-300"
                 style={{ 
-                  width: formStep === 'initial' ? '0%' : 
-                         formStep === 'loading' ? `${progress}%` : 
-                         '96%' 
+                  width: formStep === 'address' ? '0%' : '96%' 
                 }}
               />
             </div>
@@ -885,7 +849,7 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
                   className="max-w-full h-auto"
                   width={200}
                   height={40}
-                  loading="lazy" // Verzögertes Laden für bessere Performance
+                  loading="lazy"
                 />
               </div>
             </div>
@@ -893,5 +857,5 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
         </div>
       </motion.div>
     </div>
-  )
+  );
 }

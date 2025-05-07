@@ -5,6 +5,9 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useSearchParams } from 'next/navigation'
+import PDFModal from '@/components/PDFModal'
+import QRCode from 'qrcode'
+import jsPDF from 'jspdf'
 
 export default function DankePage() {
   const searchParams = useSearchParams()
@@ -12,8 +15,15 @@ export default function DankePage() {
   const buildingType = searchParams?.get('type') || 'house'
   const buildingYear = searchParams?.get('year') || ''
   const contactMethod = searchParams?.get('method') || 'email'
+  const gclid = searchParams?.get('gclid') || ''
 
   const [isAnimationComplete, setIsAnimationComplete] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [pdfData, setPdfData] = useState<{
+    dataUrl: string;
+    fullUrl: string;
+    formattedAddress: string;
+  } | null>(null)
   const [timeLeft, setTimeLeft] = useState(3 * 60) // 3 Minuten in Sekunden
   const [codeCopied, setCodeCopied] = useState(false)
   const rabattcodeRef = useRef<HTMLSpanElement>(null)
@@ -68,6 +78,103 @@ export default function DankePage() {
       default: return type
     }
   }
+
+  // Adresse formatieren
+  const formatAddress = (fullAddress: string) => {
+    const parts = fullAddress.split(',');
+    const street = parts[0].trim();
+    const city = parts[1]?.trim().split(' ').pop() || '';
+    
+    return city ? `${street} in ${city}` : street;
+  };
+
+  const handleDownloadClick = async () => {
+    try {
+      // Template basierend auf Baujahr auswählen
+      const year = parseInt(buildingYear);
+      let templateName = '';
+      
+      if (year <= 1959) {
+        templateName = '1900-1959.png';
+      } else if (year >= 1960 && year <= 1975) {
+        templateName = '1960-1975.png';
+      } else if (year >= 1976 && year <= 1990) {
+        templateName = '1976-1990.png';
+      } else {
+        templateName = '1991-2024.png';
+      }
+
+      // Payment Link und QR Code generieren
+      const paymentLink = getPaymentLink(buildingType);
+      const params = new URLSearchParams({
+        address: address,
+        type: buildingType,
+        year: buildingYear
+      });
+      const fullUrl = `${paymentLink}&${params.toString()}`;
+      
+      // QR Code generieren
+      const qrCodeDataUrl = await QRCode.toDataURL(fullUrl);
+      const qrCodeImage = new window.Image();
+      qrCodeImage.src = qrCodeDataUrl;
+      await new Promise((resolve) => {
+        qrCodeImage.onload = resolve;
+      });
+
+      // Canvas erstellen und Template laden
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('Could not get canvas context');
+
+      // Template laden
+      const templateImg = new window.Image();
+      templateImg.crossOrigin = "anonymous";
+      templateImg.src = `/images/templates/${templateName}`;
+      
+      await new Promise((resolve, reject) => {
+        templateImg.onload = resolve;
+        templateImg.onerror = reject;
+      });
+
+      // Canvas Größe setzen und Template zeichnen
+      canvas.width = templateImg.width;
+      canvas.height = templateImg.height;
+      ctx.drawImage(templateImg, 0, 0);
+
+      // Text Style setzen
+      ctx.font = 'bold 24px Arial';
+      ctx.fillStyle = '#333333';
+
+      // Text hinzufügen
+      const buildingTypeText = buildingType === 'house' ? 'Einfamilienhaus' : 
+                             buildingType === 'apartment4' ? 'Mehrfamilienhaus bis 4 Wohneinheiten' :
+                             buildingType === 'apartment5' ? 'Mehrfamilienhaus über 4 Wohneinheiten' :
+                             'Nichtwohngebäude (NWG)';
+
+      const formattedAddress = formatAddress(address);
+      
+      ctx.fillText(buildingTypeText, 140, 870);
+      ctx.fillText(formattedAddress, 140, 920);
+      ctx.fillText(`Baujahr ${buildingYear}`, 140, 970);
+
+      // QR Code zeichnen
+      ctx.drawImage(qrCodeImage, canvas.width - 483, canvas.height - 317, 187, 187);
+
+      // PNG generieren
+      const dataUrl = canvas.toDataURL('image/png');
+
+      // PDF-Daten setzen und Modal öffnen
+      setPdfData({
+        dataUrl,
+        fullUrl,
+        formattedAddress: address
+      });
+      setIsModalOpen(true);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Es gab einen Fehler beim Generieren der Proberechnung. Bitte versuchen Sie es später erneut.');
+    }
+  };
 
   // Start animation immediately and set state after animation completes
   setTimeout(() => {
@@ -158,14 +265,27 @@ export default function DankePage() {
                 <p className="text-lg text-gray-700">
                   {contactMethod === 'email' ? (
                     <>
-                      Ihre Proberechnung wurde an Ihre E-Mail gesendet und als PDF für Sie angezeigt.
+                      Ihre Proberechnung wurde an Ihre E-Mail gesendet.
                     </>
                   ) : (
                     <>
-                      Ihre Proberechnung erhalten Sie in Kürze per WhatsApp auf Ihr Smartphone und wurde als PDF für Sie angezeigt.
+                      Ihre Proberechnung erhalten Sie in Kürze per WhatsApp auf Ihr Smartphone.
                     </>
                   )}
                 </p>
+
+                {/* Download Button */}
+                <div className="mt-8">
+                  <button
+                    onClick={handleDownloadClick}
+                    className="inline-flex items-center justify-center px-8 py-4 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                  >
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Jetzt Proberechnung Herunterladen
+                  </button>
+                </div>
 
                 {/* Eingegebene Daten - Mit mehr Weißraum */}
                 <div className="mt-10 bg-green-50 rounded-xl shadow-sm p-8 border border-green-100 text-left">
@@ -619,6 +739,17 @@ export default function DankePage() {
           </div>
         </div>
       </section>
+      
+      {/* PDF Modal */}
+      {pdfData && (
+        <PDFModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          dataUrl={pdfData.dataUrl}
+          fullUrl={pdfData.fullUrl}
+          formattedAddress={pdfData.formattedAddress}
+        />
+      )}
       
       <div className="container mx-auto px-4 py-4 text-center">
         <Link href="/" className="text-green-600 hover:text-green-800 text-sm">
