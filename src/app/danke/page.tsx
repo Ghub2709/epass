@@ -88,6 +88,19 @@ export default function DankePage() {
     return city ? `${street} in ${city}` : street;
   };
 
+  const getContactMethodText = (method: string) => {
+    switch (method) {
+      case 'email':
+        return 'Ihre Proberechnung wurde an Ihre E-Mail gesendet.';
+      case 'whatsapp':
+        return 'Ihre Proberechnung erhalten Sie in Kürze per WhatsApp auf Ihr Smartphone.';
+      case 'telefon':
+        return 'Wir werden Sie in Kürze telefonisch kontaktieren, um alle Ihre Fragen rund um den Energieausweis zu besprechen.';
+      default:
+        return 'Ihre Proberechnung wurde gesendet.';
+    }
+  };
+
   const handleDownloadClick = async () => {
     try {
       // Template basierend auf Baujahr auswählen
@@ -263,15 +276,7 @@ export default function DankePage() {
                 </p>
                 
                 <p className="text-lg text-gray-700">
-                  {contactMethod === 'email' ? (
-                    <>
-                      Ihre Proberechnung wurde an Ihre E-Mail gesendet.
-                    </>
-                  ) : (
-                    <>
-                      Ihre Proberechnung erhalten Sie in Kürze per WhatsApp auf Ihr Smartphone.
-                    </>
-                  )}
+                  {getContactMethodText(contactMethod)}
                 </p>
 
                 {/* Download Button */}
@@ -429,7 +434,9 @@ export default function DankePage() {
                         <p className="text-gray-600 mt-2">
                           {contactMethod === 'email' 
                             ? 'Sie haben Ihre Proberechnung bereits als Download erhalten. Bitte prüfen Sie auch Ihren E-Mail-Posteingang sowie den Spam-Ordner.' 
-                            : 'Sie erhalten Ihre Proberechnung in Kürze per WhatsApp. Bitte stellen Sie sicher, dass Ihr Telefon eingeschaltet ist.'}
+                            : contactMethod === 'whatsapp'
+                            ? 'Sie erhalten Ihre Proberechnung in Kürze per WhatsApp. Bitte stellen Sie sicher, dass Ihr Telefon eingeschaltet ist.'
+                            : 'Wir werden Sie in Kürze telefonisch kontaktieren, um Ihnen alle Informationen zu Ihrem Energieausweis mitzuteilen und Ihre Fragen zu beantworten.'}
                         </p>
                       </div>
                     </li>

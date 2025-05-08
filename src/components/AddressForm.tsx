@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, useAnimationControls } from 'framer-motion'
 import emailjs from '@emailjs/browser'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import QRCode from 'qrcode'
 import jsPDF from 'jspdf';
 import Select from 'react-select'
@@ -13,7 +13,7 @@ interface AddressFormProps {
   isHeroVariant?: boolean;
 }
 
-// Payment Links
+// Payment Links als Konstanten definieren
 const PAYMENT_LINKS = {
   house: "https://buy.stripe.com/6oE4iIdtrfFC7Ty288?locale=de",
   apartment4: "https://buy.stripe.com/fZeg1qgFDdxu0r6289?locale=de",
@@ -21,14 +21,14 @@ const PAYMENT_LINKS = {
   commercial: "https://buy.stripe.com/5kA7uUexv8da8XCfZ1?locale=de"
 };
 
-// Helper function for payment links
+// Hilfsfunktion für Payment Links
 const getPaymentLink = (buildingType: string) => {
   return PAYMENT_LINKS[buildingType as keyof typeof PAYMENT_LINKS];
 };
 
 // Admin notification function
 const sendAdminNotification = async (
-  action: 'email' | 'whatsapp',
+  action: 'email' | 'whatsapp' | 'telefon',
   formData: {
     address: string,
     buildingType: string,
@@ -37,21 +37,31 @@ const sendAdminNotification = async (
     phone?: string,
     gclid?: string
   },
-  buildingTypeText: string
+  buildingTypeText: string,
+  thankyouUrl?: string
 ) => {
   try {
-    const adminTemplateParams = {
+    const adminTemplateParams: any = {
       to_email: 'info@premium-energiepass.online',
-      action_type: action === 'email' ? 'E-Mail Versand' : 'WhatsApp Versand',
+      action_type: action === 'email' 
+        ? 'E-Mail Versand' 
+        : action === 'whatsapp'
+        ? 'WhatsApp Versand'
+        : 'Telefonische Kontaktaufnahme',
       address: formData.address,
       building_type: buildingTypeText,
       building_year: formData.buildingYear,
       user_email: formData.email || 'Keine E-Mail angegeben',
-      user_phone: action === 'whatsapp' ? (formData.phone || 'Nicht angegeben') : 'Nicht relevant (E-Mail Versand)', 
+      user_phone: action === 'email' ? 'Nicht relevant (E-Mail Versand)' : (formData.phone || 'Nicht angegeben'), 
       timestamp: new Date().toLocaleString('de-DE'),
       payment_link: getPaymentLink(formData.buildingType),
       gclid: formData.gclid || 'Keine Google Ads CID vorhanden'
     };
+    
+    // Add the PDF URL if provided
+    if (thankyouUrl) {
+      adminTemplateParams.pdf_url = thankyouUrl;
+    }
 
     await emailjs.send(
       process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
@@ -231,6 +241,7 @@ emailjs.init(process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!);
 
 export default function AddressForm({ className = "", isHeroVariant = false }: AddressFormProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams()!;
   const [formStep, setFormStep] = useState<'address' | 'loading' | 'email'>('address');
   const [formData, setFormData] = useState({
@@ -261,6 +272,31 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
     { value: 'apartment5', label: 'Mehrfamilienhaus über 4 Wohneinheiten' },
     { value: 'commercial', label: 'Nichtwohngebäude (NWG)' }
   ];
+
+  // Referenz für das Lade-Overlay, damit wir es später referenzieren können
+  const loadingOverlayRef = useRef<HTMLDivElement | null>(null);
+  
+  // Cleanup-Funktion für das Overlay
+  const cleanupOverlay = () => {
+    if (loadingOverlayRef.current && document.body.contains(loadingOverlayRef.current)) {
+      document.body.removeChild(loadingOverlayRef.current);
+      loadingOverlayRef.current = null;
+    }
+  };
+  
+  // Cleanup beim Unmount der Komponente
+  useEffect(() => {
+    return () => {
+      cleanupOverlay();
+    };
+  }, []);
+  
+  // Effect zum Beobachten von URL-Änderungen für das cleanup
+  useEffect(() => {
+    // Wenn sich der Pfad ändert, sollten wir das Overlay entfernen
+    // Dies hilft nicht bei der initialen Navigation, aber bei nachfolgenden
+    cleanupOverlay();
+  }, [pathname, searchParams]);
 
   // Google Places Autocomplete initialization
   useEffect(() => {
@@ -419,9 +455,9 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Check if a phone number is provided when WhatsApp is selected
-    if (formData.contactMethod === 'whatsapp' && !formData.phone.trim()) {
-      alert('Bitte geben Sie Ihre Handynummer ein.');
+    // Check if a phone number is provided when WhatsApp or Telefon is selected
+    if ((formData.contactMethod === 'whatsapp' || formData.contactMethod === 'telefon') && !formData.phone.trim()) {
+      alert('Bitte geben Sie Ihre Telefonnummer ein.');
       return;
     }
     
@@ -429,8 +465,40 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
       setIsSubmitting(true);
       setError('');
 
-      // Process form and send email/whatsapp
-      if (formData.contactMethod === 'email' || formData.contactMethod === 'whatsapp') {
+      // Entferne ein bestehendes Overlay falls vorhanden (z.B. bei erneutem Klick)
+      cleanupOverlay();
+      
+      // Show loading state immediately
+      const loadingOverlay = document.createElement('div');
+      loadingOverlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]';
+      loadingOverlay.innerHTML = `
+        <div class="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
+          <div class="w-16 h-16 border-4 border-green-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+          <p class="text-gray-700 text-lg font-medium">Ihre Anfrage wird verarbeitet...</p>
+        </div>
+      `;
+      document.body.appendChild(loadingOverlay);
+      loadingOverlayRef.current = loadingOverlay;
+
+      // Create the thank you page URL params early so we can use it in emails
+      const params = new URLSearchParams({
+        address: formData.address,
+        type: formData.buildingType,
+        year: formData.buildingYear,
+        method: formData.contactMethod
+      });
+      
+      // Add gclid if present
+      if (formData.gclid) {
+        params.append('gclid', formData.gclid);
+      }
+      
+      // Construct the full thank you page URL
+      const baseUrl = window.location.origin; // Gets the base URL of the site
+      const thankyouUrl = `${baseUrl}/danke?${params.toString()}`;
+
+      // Process form and send email/whatsapp/telefon
+      if (formData.contactMethod === 'email' || formData.contactMethod === 'whatsapp' || formData.contactMethod === 'telefon') {
         // Get building type text for better readability
         const buildingTypeText = formData.buildingType === 'house' ? 'Einfamilienhaus' : 
                          formData.buildingType === 'apartment4' ? 'Mehrfamilienhaus bis 4 Wohneinheiten' :
@@ -448,7 +516,8 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
             building_type: buildingTypeText,
             message: formattedAddress,
             building_year: formData.buildingYear,
-            payment_link: getPaymentLink(formData.buildingType)
+            payment_link: getPaymentLink(formData.buildingType),
+            pdf_url: thankyouUrl  // Add the thank you page URL
           };
 
           // Send email to customer
@@ -466,29 +535,25 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
         
         // Send notification to admin
         await sendAdminNotification(
-          formData.contactMethod as 'email' | 'whatsapp', 
+          formData.contactMethod as 'email' | 'whatsapp' | 'telefon', 
           formData, 
-          buildingTypeText
+          buildingTypeText,
+          thankyouUrl
         );
 
-        // Redirect to the thank you page
-        const params = new URLSearchParams({
-          address: formData.address,
-          type: formData.buildingType,
-          year: formData.buildingYear,
-          method: formData.contactMethod
-        });
+        // Add a small delay to show the loading animation for at least 1 second
+        await new Promise(resolve => setTimeout(resolve, 1000));
         
-        // Add gclid if present
-        if (formData.gclid) {
-          params.append('gclid', formData.gclid);
-        }
-        
-        router.push(`/danke?${params.toString()}`);
+        // Ersetzen Sie den Navigationskorb mit einem Window-Location-Ansatz
+        // Dies wird das Overlay entfernen, wenn die Seite sich ändert
+        window.location.href = thankyouUrl;
+        return; // Beenden Sie die Funktion, nachdem die Umleitung begonnen hat
       }
     } catch (error) {
       console.error('Error submitting form:', error);
       setError('Es gab einen Fehler. Bitte versuchen Sie es später erneut.');
+      // Remove loading overlay if there's an error
+      cleanupOverlay();
     } finally {
       setIsSubmitting(false);
     }
@@ -565,6 +630,22 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
               </button>
+
+              <button
+                type="button"
+                onClick={() => setFormData(prev => ({ ...prev, contactMethod: 'telefon' }))}
+                className="w-full flex items-center justify-between px-6 py-4 bg-white border-2 border-gray-200 rounded-xl hover:border-green-500 hover:shadow-lg transition-all duration-300 group"
+              >
+                <div className="flex items-center gap-3">
+                  <svg className="w-6 h-6 text-gray-400 group-hover:text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                  </svg>
+                  <span className="font-medium">Per Telefon</span>
+                </div>
+                <svg className="w-5 h-5 text-gray-400 group-hover:text-green-500 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
             </div>
           ) : (
             <div className="space-y-6">
@@ -584,7 +665,7 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
                     required
                     pattern="^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$"
                     className="block w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    placeholder="Ihre Handynummer"
+                    placeholder={formData.contactMethod === 'whatsapp' ? "Ihre Handynummer" : "Ihre Telefonnummer"}
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   />
@@ -596,7 +677,13 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
                 onClick={handleEmailSubmit}
                 className="w-full flex items-center justify-center px-8 py-4 border border-transparent text-base font-medium rounded-xl text-white bg-green-600 hover:bg-green-700 transition-colors group"
               >
-                <span>Ja! Unterlagen {formData.contactMethod === 'email' ? 'per E-Mail' : 'per WhatsApp'} zusenden</span>
+                <span>
+                  {formData.contactMethod === 'email' 
+                    ? 'Ja! Unterlagen per E-Mail zusenden' 
+                    : formData.contactMethod === 'whatsapp'
+                    ? 'Ja! Unterlagen per WhatsApp zusenden'
+                    : 'Ja! Telefonisch kontaktieren'}
+                </span>
                 <svg 
                   className="w-5 h-5 ml-2 transform transition-all duration-300 group-hover:translate-x-1" 
                   fill="none" 
@@ -681,6 +768,7 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
               }}
               className="react-select-container"
               classNamePrefix="react-select"
+              isSearchable={false}
               styles={{
                 control: (baseStyles, state) => ({
                   ...baseStyles,
@@ -788,23 +876,25 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
         <div className="absolute -bottom-4 -left-4 w-24 h-24 bg-blue-50 rounded-full opacity-50 blur-xl transition-all duration-300 group-hover:scale-150 -z-10" />
 
         <div className="relative z-20">
-          {/* Progress Bar */}
-          <div className="bg-green-50 px-6 py-3">
-            <div className="flex justify-between text-sm text-green-800 mb-2">
-              <span>Fortschritt</span>
-              <span>
-                {formStep === 'address' ? '0%' : '96%'}
-              </span>
+          {/* Progress Bar - Only show when not loading */}
+          {formStep !== 'loading' && (
+            <div className="bg-green-50 px-6 py-3">
+              <div className="flex justify-between text-sm text-green-800 mb-2">
+                <span>Fortschritt</span>
+                <span>
+                  {formStep === 'address' ? '0%' : '96%'}
+                </span>
+              </div>
+              <div className="h-2 bg-green-100 rounded-full">
+                <div 
+                  className="h-2 bg-green-600 rounded-full transition-all duration-300"
+                  style={{ 
+                    width: formStep === 'address' ? '0%' : '96%' 
+                  }}
+                />
+              </div>
             </div>
-            <div className="h-2 bg-green-100 rounded-full">
-              <div 
-                className="h-2 bg-green-600 rounded-full transition-all duration-300"
-                style={{ 
-                  width: formStep === 'address' ? '0%' : '96%' 
-                }}
-              />
-            </div>
-          </div>
+          )}
 
           <div className="p-8">
             <form onSubmit={handleSubmit}>

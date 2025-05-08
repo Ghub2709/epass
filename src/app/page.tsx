@@ -8,11 +8,13 @@ import ContactForm from '@/components/sections/ContactForm'
 import OptimizedFAQ from '@/components/sections/OptimizedFAQ'
 import Contact from '@/components/sections/Contact'
 import Footer from '@/components/sections/Footer'
+import USPBanner from '@/components/sections/USPBanner'
 
 export default function Home() {
   return (
     <main>
       <HeroInput />
+      <USPBanner />
       <VideoSection />
       <Features />
       <Process />
