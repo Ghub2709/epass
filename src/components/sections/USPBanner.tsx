@@ -20,7 +20,7 @@ export default function USPBanner() {
             
             <div className="text-gray-700 text-lg leading-relaxed space-y-8">
               <p>
-                Als einziger Anbieter in Bremen bieten wir einen kostenlosen Vor-Ort-Service an! Unser Experte kommt 
+                Als einziger Anbieter in Bremen und im Umkreis von 50km bieten wir einen kostenlosen Vor-Ort-Service an! Unser Experte kommt 
                 zu Ihnen und erhebt alle notwendigen Daten direkt vor Ort – Sie müssen sich um nichts kümmern. Dies 
                 hat entscheidende Vorteile:
               </p>
@@ -32,7 +32,7 @@ export default function USPBanner() {
                   </div>
                   <div>
                     <span className="font-bold text-gray-800 text-xl">Kein Papierkram für Sie:</span>
-                    <span className="ml-2">Wir übernehmen die komplette Datenerhebung</span>
+                    <span className="ml-2">Wir übernehmen die komplette Datenerhebung, Sie müssen nur die Haustür öffnen.</span>
                   </div>
                 </li>
                 
@@ -42,8 +42,8 @@ export default function USPBanner() {
                   </div>
                   <div>
                     <span className="font-bold text-gray-800 text-xl">Besseres Ergebnis:</span>
-                    <span className="ml-2">Durch die präzise Vor-Ort-Aufnahme erreichen wir in 99,7% der Fälle ein 
-                    besseres Ergebnis für Ihren Energieausweis</span>
+                    <span className="ml-2">Durch die präzise Vor-Ort-Aufnahme erreichen wir in 9 von 10 Fällen ein 
+                    besseres Ergebnis für Ihren Energieausweis.</span>
                   </div>
                 </li>
 
@@ -53,7 +53,7 @@ export default function USPBanner() {
                   </div>
                   <div className="relative">
                     <span className="font-bold text-gray-800 text-xl">19% MwSt. geschenkt:</span>
-                    <span className="ml-2">Aktuell sparen Sie die komplette Mehrwertsteuer! Sichern Sie sich jetzt diesen zeitlich begrenzten Vorteil für Ihren Energieausweis</span>
+                    <span className="ml-2">Aktuell sparen Sie die komplette Mehrwertsteuer! Sichern Sie sich jetzt diesen zeitlich begrenzten Vorteil für Ihren Energieausweis.</span>
                     <div className="absolute -top-3 -right-4 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full transform rotate-12 shadow-md">
                       AKTUELL
                     </div>
