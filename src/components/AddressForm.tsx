@@ -161,11 +161,11 @@ const generatePDF = async (dataUrl: string, fullUrl: string, formattedAddress: s
   </svg><span>PDF Herunterladen</span>`;
   
   downloadButton.onclick = () => {
-    const link = document.createElement('a');
-    link.download = formatFileName(formattedAddress).replace('.png', '.pdf');
-    link.href = pdfOutput;
-    link.click();
-  };
+  const link = document.createElement('a');
+  link.download = formatFileName(formattedAddress).replace('.png', '.pdf');
+  link.href = pdfOutput;
+  link.click();
+};
   
   // Schließen-Button
   const closeButton = document.createElement('button');
@@ -286,7 +286,7 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
   
   // Cleanup beim Unmount der Komponente
   useEffect(() => {
-    return () => {
+      return () => {
       cleanupOverlay();
     };
   }, []);
@@ -500,33 +500,33 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
       // Process form and send email/whatsapp/telefon
       if (formData.contactMethod === 'email' || formData.contactMethod === 'whatsapp' || formData.contactMethod === 'telefon') {
         // Get building type text for better readability
-        const buildingTypeText = formData.buildingType === 'house' ? 'Einfamilienhaus' : 
-                         formData.buildingType === 'apartment4' ? 'Mehrfamilienhaus bis 4 Wohneinheiten' :
-                         formData.buildingType === 'apartment5' ? 'Mehrfamilienhaus über 4 Wohneinheiten' :
-                         'Nichtwohngebäude (NWG)';
-        
+      const buildingTypeText = formData.buildingType === 'house' ? 'Einfamilienhaus' : 
+                             formData.buildingType === 'apartment4' ? 'Mehrfamilienhaus bis 4 Wohneinheiten' :
+                             formData.buildingType === 'apartment5' ? 'Mehrfamilienhaus über 4 Wohneinheiten' :
+                             'Nichtwohngebäude (NWG)';
+
         // Send email to customer if email contact method is selected
         if (formData.contactMethod === 'email') {
           // Format address for better readability
-          const formattedAddress = formatAddress(formData.address);
-          
+      const formattedAddress = formatAddress(formData.address);
+      
           // EmailJS Template Parameter for customer email
-          const templateParams = {
-            to_email: formData.email,
-            building_type: buildingTypeText,
-            message: formattedAddress,
-            building_year: formData.buildingYear,
+        const templateParams = {
+          to_email: formData.email,
+          building_type: buildingTypeText,
+          message: formattedAddress,
+          building_year: formData.buildingYear,
             payment_link: getPaymentLink(formData.buildingType),
             pdf_url: thankyouUrl  // Add the thank you page URL
-          };
+        };
 
           // Send email to customer
-          const response = await emailjs.send(
-            process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
-            process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!,
-            templateParams,
-            process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!
-          );
+        const response = await emailjs.send(
+          process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
+          process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!,
+          templateParams,
+          process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!
+        );
 
           if (response.status !== 200) {
             throw new Error('Failed to send email to customer');
@@ -540,7 +540,7 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
           buildingTypeText,
           thankyouUrl
         );
-
+          
         // Add a small delay to show the loading animation for at least 1 second
         await new Promise(resolve => setTimeout(resolve, 1000));
         
@@ -878,22 +878,22 @@ export default function AddressForm({ className = "", isHeroVariant = false }: A
         <div className="relative z-20">
           {/* Progress Bar - Only show when not loading */}
           {formStep !== 'loading' && (
-            <div className="bg-green-50 px-6 py-3">
-              <div className="flex justify-between text-sm text-green-800 mb-2">
-                <span>Fortschritt</span>
-                <span>
+          <div className="bg-green-50 px-6 py-3">
+            <div className="flex justify-between text-sm text-green-800 mb-2">
+              <span>Fortschritt</span>
+              <span>
                   {formStep === 'address' ? '0%' : '96%'}
-                </span>
-              </div>
-              <div className="h-2 bg-green-100 rounded-full">
-                <div 
-                  className="h-2 bg-green-600 rounded-full transition-all duration-300"
-                  style={{ 
-                    width: formStep === 'address' ? '0%' : '96%' 
-                  }}
-                />
-              </div>
+              </span>
             </div>
+            <div className="h-2 bg-green-100 rounded-full">
+              <div 
+                className="h-2 bg-green-600 rounded-full transition-all duration-300"
+                style={{ 
+                    width: formStep === 'address' ? '0%' : '96%' 
+                }}
+              />
+            </div>
+          </div>
           )}
 
           <div className="p-8">
