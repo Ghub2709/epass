@@ -5,23 +5,17 @@ import ScrollToTop from '@/components/ScrollToTop'
 import { useEffect } from 'react'
 import { metadata } from './metadata'
 import emailjs from '@emailjs/browser';
-import Script from 'next/script'
-import GTM from '@/components/GTM'
+import TagManager from 'react-gtm-module'
 
 const inter = Inter({ subsets: ['latin'] })
-
-// GTM ID
-const GTM_ID = 'GTM-MH42RVCS'
 
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  // Google Maps API wird jetzt nur bei Bedarf geladen
-  // Kein useEffect mehr zum automatischen Laden der API
-
   useEffect(() => {
+    // EmailJS Initialisierung
     const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY;
     if (!publicKey) {
       console.error('EmailJS Public Key ist nicht definiert!');
@@ -34,6 +28,11 @@ export default function RootLayout({
     } catch (error) {
       console.error('Fehler bei der EmailJS-Initialisierung:', error);
     }
+    
+    // GTM Initialisierung
+    TagManager.initialize({
+      gtmId: 'GTM-MH42RVCS'
+    });
   }, [])
 
   return (
@@ -41,11 +40,8 @@ export default function RootLayout({
       <head>
         <title>{metadata.title}</title>
         <meta name="description" content={metadata.description} />
-        {/* Entferne den alten GTM-Code, da wir die Komponente verwenden */}
       </head>
       <body className={`${inter.className} antialiased`}>
-        {/* GTM wird jetzt client-seitig eingebunden */}
-        <GTM />
         {children}
         <ScrollToTop />
       </body>

@@ -8,7 +8,7 @@ import { useSearchParams } from 'next/navigation'
 import PDFModal from '@/components/PDFModal'
 import QRCode from 'qrcode'
 import jsPDF from 'jspdf'
-import GTM from '@/components/GTM'
+import TagManager from 'react-gtm-module'
 
 export default function DankePage() {
   const searchParams = useSearchParams()
@@ -17,6 +17,22 @@ export default function DankePage() {
   const buildingYear = searchParams?.get('year') || ''
   const contactMethod = searchParams?.get('method') || 'email'
   const gclid = searchParams?.get('gclid') || ''
+
+  // GTM DataLayer Event für die Danke-Seite senden
+  useEffect(() => {
+    // PageView-Event an GTM senden
+    TagManager.dataLayer({
+      dataLayer: {
+        event: 'pageView',
+        pagePath: '/danke',
+        pageTitle: 'Danke für Ihre Anfrage',
+        buildingType: buildingType,
+        buildingYear: buildingYear,
+        contactMethod: contactMethod,
+        gclid: gclid || undefined
+      }
+    });
+  }, [buildingType, buildingYear, contactMethod, gclid]);
 
   const [isAnimationComplete, setIsAnimationComplete] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -197,7 +213,6 @@ export default function DankePage() {
 
   return (
     <main className="bg-white">
-      <GTM />
       <section className="relative bg-gradient-to-b from-green-50 via-white to-white py-20">
         {/* Hintergrundeffekte */}
         <div className="absolute top-0 left-0 w-full h-64 bg-gradient-to-r from-green-50 to-blue-50 -z-10"></div>
