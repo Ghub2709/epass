@@ -8,6 +8,7 @@ import { useSearchParams } from 'next/navigation'
 import PDFModal from '@/components/PDFModal'
 import QRCode from 'qrcode'
 import jsPDF from 'jspdf'
+import GTM from '@/components/GTM'
 
 export default function DankePage() {
   const searchParams = useSearchParams()
@@ -196,6 +197,7 @@ export default function DankePage() {
 
   return (
     <main className="bg-white">
+      <GTM />
       <section className="relative bg-gradient-to-b from-green-50 via-white to-white py-20">
         {/* Hintergrundeffekte */}
         <div className="absolute top-0 left-0 w-full h-64 bg-gradient-to-r from-green-50 to-blue-50 -z-10"></div>
