@@ -18,21 +18,19 @@ export default function DankePage() {
   const contactMethod = searchParams?.get('method') || 'email'
   const gclid = searchParams?.get('gclid') || ''
 
-  // GTM DataLayer Event für die Danke-Seite senden
+  // Sende benutzerdefinierte Daten an GTM
   useEffect(() => {
-    // PageView-Event an GTM senden
+    // Sende Event für die Danke-Seite
     TagManager.dataLayer({
       dataLayer: {
-        event: 'pageView',
-        pagePath: '/danke',
-        pageTitle: 'Danke für Ihre Anfrage',
-        buildingType: buildingType,
-        buildingYear: buildingYear,
-        contactMethod: contactMethod,
-        gclid: gclid || undefined
+        'event': 'pageView',
+        'pagePath': '/danke',
+        'pageTitle': 'Danke für Ihre Anfrage',
+        'buildingType': buildingType,
+        'buildingYear': buildingYear
       }
     });
-  }, [buildingType, buildingYear, contactMethod, gclid]);
+  }, [buildingType, buildingYear]);
 
   const [isAnimationComplete, setIsAnimationComplete] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
