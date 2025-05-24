@@ -37,6 +37,7 @@ export default function RootLayout({
       <head>
         <title>{metadata.title}</title>
         <meta name="description" content={metadata.description} />
+        <link rel="icon" href="/favicon-v2.png" type="image/png" />
       </head>
       <body className={`${inter.className} antialiased`}>
         <GTM />
